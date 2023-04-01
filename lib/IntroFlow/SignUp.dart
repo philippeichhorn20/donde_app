@@ -4,6 +4,7 @@ import 'package:donde/Store.dart';
 import 'package:donde/UITemplates.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 class SignUp extends StatefulWidget {
@@ -36,8 +37,10 @@ class _SignUpState extends State<SignUp> {
                 Padding(
                   padding: const EdgeInsets.all(8.0),
                   child: TextField(
+                    autofocus: true,
                     controller: usernameControl,
                     style: UITemplates.importantTextStyle,
+                    keyboardType: TextInputType.phone,
                     decoration: InputDecoration(
                         hintText: "Username",
                       hintStyle: UITemplates.importantTextStyleHint,
@@ -52,7 +55,10 @@ class _SignUpState extends State<SignUp> {
                   child: TextField(
                     controller: numberControl,
                     style: UITemplates.importantTextStyle,
-
+                    keyboardType: TextInputType.phone,
+                    inputFormatters: [
+                      FilteringTextInputFormatter.deny("[a-zA-Z]"),
+                    ],
                     decoration: InputDecoration(
                       hintText: "Phone number",
                       hintStyle: UITemplates.importantTextStyleHint,

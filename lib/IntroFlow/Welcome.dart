@@ -1,16 +1,32 @@
+import 'package:donde/Classes/MyUser.dart';
 import 'package:donde/IntroFlow/LogIn.dart';
 import 'package:donde/IntroFlow/SignUp.dart';
+import 'package:donde/Store.dart';
 import 'package:donde/UITemplates.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 
 class Welcome extends StatefulWidget {
+  final MyUser? referralUser;
+  const Welcome(this.referralUser, {super.key});
+
   @override
   _WelcomeState createState() => _WelcomeState();
 }
 
 class _WelcomeState extends State<Welcome> {
   TextEditingController friendInput = TextEditingController();
+
+
+  @override
+  void initState() {
+    // TODO: implement initState
+    super.initState();
+    if(widget.referralUser != null){
+      friendInput.text = widget.referralUser!.id;
+    }
+
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -36,6 +52,7 @@ class _WelcomeState extends State<Welcome> {
               Container(
                 width: MediaQuery.of(context).size.width*0.5,
                 child: TextField(
+                  autofocus: true,
                 controller: friendInput,
                 textAlign: TextAlign.center,
                 decoration: InputDecoration(

@@ -27,6 +27,7 @@ class SignUpFunctions{
       inst.setString("phone",phone.replaceAll(" ", "") );
       inst.setString("password",password);
     }
+    Store.initUser();
     return user;
   }
 
@@ -41,6 +42,8 @@ class SignUpFunctions{
     SharedPreferences inst = await SharedPreferences.getInstance();
     inst.setString("phone",phone.replaceAll(" ", "") );
     inst.setString("password",password);
+    Store.initUser();
+
     return res.user != null;
   }
 
@@ -58,6 +61,16 @@ class SignUpFunctions{
     );
     final Session? session = res.session;
     final User? user = res.user;
+    Store.initUser();
     return res.user != null;
   }
+
+
+  static Future<void> signOut()async{
+    SharedPreferences inst = await SharedPreferences.getInstance();
+    inst.clear();
+    await Store.supabase.auth.signOut();
+  }
+
+
 }

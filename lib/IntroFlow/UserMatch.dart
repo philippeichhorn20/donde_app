@@ -23,51 +23,57 @@ class _UserMatchState extends State<UserMatch> {
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      child: Scaffold(
-        appBar: UITemplates.appbar("Add your friends"),
-        body: Stack(
-          alignment: Alignment.center,
-          children: [
-            FutureBuilder(
+    return Scaffold(
+      appBar: UITemplates.appbar("Add your friends"),
+      body: Stack(
+        alignment: Alignment.center,
+        children: [
+          Positioned(
+            top: 0,
+            child: FutureBuilder(
                 future: getFriends(widget.contactName),
                 builder: (context, snapshot){
                   if(snapshot == null || snapshot.data == null || snapshot.data!.length ==0){
-                    return SizedBox();
+                    return SizedBox(height: 10, width: 10,);
                   }
-                  return ListView.builder(
-                    itemCount: snapshot == null||snapshot.data == null?0:snapshot.data!.length,
-                    itemBuilder: (context, index) {
-                      MyUser user = snapshot.data![index];
-                      return ListTiles.userListTile(user, context);
-                    },);
+                  return Container(
+                    height: MediaQuery.of(context).size.height*.8,
+                    width: MediaQuery.of(context).size.width,
+                    child: ListView.builder(
+                      itemCount: snapshot == null||snapshot.data == null?0:snapshot.data!.length,
+                      itemBuilder: (context, index) {
+                        MyUser user = snapshot.data![index];
+                        return ListTiles.userListTile(user, context);
+                      },),
+                  );
                 }),
-            Positioned(
-
-                bottom:60,
-                child: Container(
-                  width: MediaQuery.of(context).size.width*.7,
-                  height: 50,
-                  child: TextButton(
-                    onPressed: (){
-                      Navigator.of(context).push(
-                        CupertinoPageRoute(
-                          builder: (context) => InviteFriends(),
-                        ),
-                      );
-                    },
-                    child: Text("Next",
-                        style: UITemplates.buttonTextStyle),
-                    style: UITemplates.buttonStyle,
-                  ),
-                ))
-          ],
-        )
-      ),
+          ),
+          Positioned(
+              bottom: 50,
+              child: Container(
+                width: MediaQuery.of(context).size.width*.7,
+                height: 50,
+                child: TextButton(
+                  onPressed: (){
+                    Navigator.of(context).pushReplacement(
+                      CupertinoPageRoute(
+                        builder: (context) => InviteFriends(),
+                      ),
+                    );
+                  },
+                  child: Text("Next",
+                      style: UITemplates.buttonTextStyle),
+                  style: UITemplates.buttonStyle,
+                ),
+              )),
+        ],
+      )
     );
   }
 
   Future<List<MyUser>> getFriends(String contactName)async{
+    print("User match cakled");
       return GetFriends.getFriendsFromContact(contactName);
+
   }
 }

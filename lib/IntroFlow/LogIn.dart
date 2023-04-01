@@ -3,6 +3,7 @@ import 'package:donde/MainViews/HomePage.dart';
 import 'package:donde/UITemplates.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 class LogIn extends StatefulWidget {
@@ -27,9 +28,13 @@ class _LogInState extends State<LogIn> {
                 Padding(
                   padding: const EdgeInsets.all(8.0),
                   child: TextField(
+                    autofocus: true,
                     controller: numberControl,
                     style: UITemplates.importantTextStyle,
-
+                    keyboardType: TextInputType.phone,
+                    inputFormatters: [
+                      FilteringTextInputFormatter.deny("[a-zA-Z]")
+                    ],
                     decoration: InputDecoration(
                       hintText: "Phone number",
                       hintStyle: UITemplates.importantTextStyleHint,

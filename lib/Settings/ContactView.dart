@@ -3,7 +3,6 @@ import 'package:donde/BasicUIElements/ListTiles.dart';
 import 'package:donde/Classes/MyUser.dart';
 import 'package:donde/UITemplates.dart';
 import 'package:flutter/material.dart';
-import 'package:supabase_flutter/supabase_flutter.dart';
 
 class ContactView extends StatefulWidget {
 
@@ -19,7 +18,7 @@ class _ContactViewState extends State<ContactView> {
   Widget build(BuildContext context) {
     return Container(
       child: Scaffold(
-          appBar: UITemplates.appbar("Add your friends"),
+          appBar: UITemplates.appbar(widget.type.toString()),
           body: Stack(
             alignment: Alignment.center,
             children: [
@@ -34,7 +33,8 @@ class _ContactViewState extends State<ContactView> {
                       itemBuilder: (context, index) {
                         MyUser user = snapshot.data![index];
                         return ListTiles.userListTile(user, context);
-                      },);
+                      },
+                    );
                   }),
             ],
           )

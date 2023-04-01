@@ -1,21 +1,28 @@
 import 'dart:io';
 
+import 'package:donde/BackendFunctions/LocationServices.dart';
 import 'package:donde/BackendFunctions/RelationshipFunctions.dart';
 import 'package:donde/BackendFunctions/ReviewFunctions.dart';
 import 'package:donde/Classes/MyUser.dart';
 import 'package:donde/Classes/Review.dart';
 import 'package:donde/Classes/Spot.dart';
+import 'package:donde/MainViews/AddReview.dart';
 import 'package:donde/MainViews/SpotView.dart';
+import 'package:donde/Store.dart';
 import 'package:donde/UITemplates.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:geocoding/geocoding.dart';
+
+
+// userListTile,spotListTile, reviewListTile, showSnackbar
 
 class ListTiles{
 
   static Widget userListTile (MyUser user, BuildContext context, ){
     return StatefulBuilder(builder: (context, setState) {
       return SizedBox(
-        width: 300,
+
         child: Padding(
           padding: const EdgeInsets.all(8.0),
           child: ListTile(title: Text(user.username,
@@ -35,18 +42,34 @@ class ListTiles{
               icon: Icon(user.amFollowing?Icons.add_circle:Icons.add_circle_outline, color: Colors.white,), label: SizedBox()),),
         ),
       );
-    },);
+    },
+    );
   }
 
   static Widget spotListTile (Spot spot, BuildContext context, ){
+
     return StatefulBuilder(builder: (context, setState) {
-      return SizedBox(
-        width: 300,
-        child: ListTile(title: Text(spot.name),
+      return Padding(
+        padding: const EdgeInsets.only(top:10.0, left: 10,right: 10),
+        child: ListTile(
+          shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(10),
+          ),
+          tileColor: Colors.white12,
+          minVerticalPadding: 10,
+          title: Text(spot.name),
+          subtitle: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(spot.description,style: UITemplates.descriptionStyle,),
+              Text(spot.adress, )
+            ],
+          ),
+
           onTap: () {
             Navigator.of(context).push(
               CupertinoPageRoute(
-                builder: (context) => SpotView(spot),
+                builder: (context) => AddReview(spot),
               ),
             );
           },
@@ -56,8 +79,10 @@ class ListTiles{
   }
 
 
-  static Widget reviewListTile (Review review, BuildContext context, ){
-    review.id = 8;
+  static Widget reviewListTile (Review review, BuildContext context,Function setGenState ){
+    late Future reviewPic;
+    reviewPic = ReviewFunctions.getReviewPic(review);
+
     return StatefulBuilder(builder: (context, setState) {
       return Container(
         child: Column(
@@ -65,21 +90,20 @@ class ListTiles{
             Stack(
               children: [
                 Container(
-                  height: 300,
                   decoration: BoxDecoration(
                       borderRadius: BorderRadius.all(Radius.circular(20.0)),
-                    border: Border.all(color: !review.liked?Colors.red:Colors.green, width: 10,),
                   ),
                   child: ClipRRect(
                     borderRadius: BorderRadius.all(Radius.circular(10.0)),
 
                     child: SizedBox(
-                      width: 300,
+                      width: 350,
+                      height: 500,
                       child: FutureBuilder(
-                        future: ReviewFunctions.getReviewPic(review),
+                        future: reviewPic,
                         builder: (context, snapshot) {
                           if(snapshot.connectionState != ConnectionState.done || snapshot.data == null){
-                            return const CircularProgressIndicator();
+                            return UITemplates.loadingAnimation;
                           }
                         return Image.memory(snapshot.data!, fit: BoxFit.fill,);
                       },),
@@ -88,25 +112,68 @@ class ListTiles{
                 ),
                 Positioned(
                     child: Text(review.text,
-                    style: TextStyle(color: Colors.black, fontWeight: FontWeight.w700),),
+                    style: UITemplates.reviewText(review.textColor??0),),
                 bottom: 20,
                 left: 10,
                 ),
+                if(review.author.id == Store.me.id)
+                Positioned(
+                    top: 10,
+                    right: 10,
+                    child: TextButton(onPressed: ()async {
+                      print("deleting");
+                      await ReviewFunctions.deleteReview(review);
+                      setGenState((){
+                        review.spot.reviews!.remove(review);
+                      });
+                    },
+                      child: Icon(Icons.delete_forever, color: Colors.red,),
+                    )),
               ],
             ),
-            Container(
-              height: 30,
-              child: Row(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  if(review.createdAt != null)
-                    Text("${review.createdAt!.day}.${review.createdAt!.month}.${review.createdAt!.year}"),
-                  TextButton(
-                    onPressed: () {
-                      showSnackbar(context, review.author, setState);
-                    },
-                      child: Text("by ${review.author.username}"),),
-                ],
+            Padding(
+              padding: const EdgeInsets.only(top:5.0, left: 10),
+              child: Container(
+                alignment: Alignment.center,
+                child: Padding(
+                  padding: const EdgeInsets.all(8.0),
+                  child: Row(
+                    crossAxisAlignment: CrossAxisAlignment.center,
+                    children: [
+                      if(review.createdAt != null)
+                        Text("${review.createdAt!.day}.${review.createdAt!.month}.${review.createdAt!.year}", style: UITemplates.descriptionStyle,),
+                      Text("\t•\tby ${review.author.username}\t",
+                        style: UITemplates.descriptionStyle,
+                      ),
+                      if(!review.author.amFollowing)
+                      ElevatedButton(
+                        onPressed: () async{
+                          await RelationshipFunctions.followUser(review.author);
+                          setState((){
+                            review.author.amFollowing = review.author.amFollowing;
+                            print(review.author.amFollowing);
+                          });
+                        },
+
+                        style: ElevatedButton.styleFrom(
+                          padding: EdgeInsets.only(left:4,right: 4),
+                          backgroundColor: review.author.amFollowing?Colors.white12:Colors.white,
+                          shadowColor: Colors.transparent,
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(10),
+                          ),),
+                          child: Text((review.author.amFollowing?"unfollow":"follow"),
+                          style: TextStyle(
+                            color: review.author.amFollowing?Colors.white24:Colors.black,
+                            fontWeight: FontWeight.bold
+                          ),
+
+                          ),
+
+                      ),
+                    ],
+                  ),
+                ),
               ),
             )
           ],
@@ -148,6 +215,24 @@ duration: Duration(seconds: 7),
 
         )
     );
-    
+  }
+  static Widget showLocations(Location location){
+    return SizedBox(
+
+      child: Padding(
+        padding: const EdgeInsets.all(8.0),
+        child: ListTile(
+          leading: Transform.rotate(angle: LocationServices.getDirection(location),child: Icon(Icons.arrow_forward),),
+          title: Text(LocationServices.getDistance(location).toString(),
+          style: UITemplates.buttonTextStyle,
+        ),
+          tileColor: Colors.white12,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(20),
+          ),
+        ),
+      ),
+    );
+
   }
 }
