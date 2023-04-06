@@ -18,7 +18,7 @@ class _ContactViewState extends State<ContactView> {
   Widget build(BuildContext context) {
     return Container(
       child: Scaffold(
-          appBar: UITemplates.appbar(widget.type.toString()),
+          appBar: UITemplates.appbar(widget.type.name),
           body: Stack(
             alignment: Alignment.center,
             children: [

@@ -21,14 +21,14 @@ class HomePage extends StatefulWidget {
 
 class _HomePageState extends State<HomePage> {
   late Future spots;
-  Location? location;
+  List<Spot> spotList = [];
+  GlobalKey builderKey = GlobalKey();
+
 
   initState() {
+    print("inniting homepage");
     super.initState();
-    spots = getSpots();
-    LocationServices.getUsersLocation().then((value) {
-      location = Location(latitude: Store.position!.latitude, longitude: Store.position!.longitude, timestamp: DateTime.now());
-    });
+    spots = getSpots(200, false);
   }
 
   @override
@@ -36,6 +36,7 @@ class _HomePageState extends State<HomePage> {
     return Container(
       child: Scaffold(
         appBar: AppBar(
+          elevation: 0,
             leading: Container(
               child: TextButton.icon(
                   onPressed: () {
@@ -55,11 +56,12 @@ class _HomePageState extends State<HomePage> {
             ),
             title: TextButton(
               onPressed: () async {
-                print("pressed");
-                buildLocationDialog(context);
-                setState(() {
-                  location = location;
-                });
+             //   print("pressed");
+            //   await buildLocationDialog(context);
+             //   await forceNewSpots(30, setState);
+           //     setState(() {
+           //       spotList = spotList;
+           //     });
               },
               child: Text(
                 "donde.",
@@ -68,104 +70,115 @@ class _HomePageState extends State<HomePage> {
             )),
         body: Stack(
           children: [
-            FutureBuilder(
-              future: spots,
-              builder: (context, snapshot) {
-                return DefaultTabController(
-                    length: 2,
-                    child: Stack(
-                      alignment: Alignment.center,
-                      children: [
-                        TabBarView(children: [
-                          ListView.builder(
-                            scrollDirection: Axis.vertical,
-                            itemCount: (snapshot.data??[]).length+1,
-                            itemBuilder: (context, index) {
+            DefaultTabController(
 
-                              if(index == (snapshot.data??[]).length){
-                                return Padding(
-                                  padding: const EdgeInsets.only(top:20.0,bottom:100.0,left:20.0,right:20.0,),
-                                  child: TextButton(
-                                    child: Text("Add a new location", style: UITemplates.buttonTextStyle,),
-                                    style: UITemplates.lightButtonStyle,
+            length: 2,
+            child: Stack(
+              alignment: Alignment.center,
+              children: [
+                TabBarView(
+                    children: [
+                  RefreshIndicator(
+                    onRefresh: ()async{
+                      await getSpots(50, true);
+                    },
+                    color: Colors.white,
+                    backgroundColor: Colors.black,
+                    child: ListView.builder(
+                      scrollDirection: Axis.vertical,
+                      itemCount: spotList.length+1,
+                      key: builderKey,
+                      itemBuilder: (context, index) {
+                        if(index == spotList.length){
+                          return Padding(
+                            padding: const EdgeInsets.only(top:20.0,bottom:100.0,left:20.0,right:20.0,),
+                            child: TextButton(
+                              child: Text("Add a new location", style: UITemplates.buttonTextStyle,),
+                              style: UITemplates.lightButtonStyle,
 
-                                    onPressed: (){
-                                      Navigator.of(context).push(
-                                        CupertinoPageRoute(
-                                          fullscreenDialog: true,
-                                          builder: (context) => DoesSpotExist(),
-                                        ),
-                                      );
-                                    },
+                              onPressed: (){
+                                Navigator.of(context).push(
+                                  CupertinoPageRoute(
+                                    fullscreenDialog: true,
+                                    builder: (context) => DoesSpotExist(),
                                   ),
                                 );
-                              }
-                              Spot spot = snapshot.data![index];
-                              return Container(
-                                  width: MediaQuery.of(context).size.width,
-                                  child: Padding(
-                                    padding: const EdgeInsets.all(15.0),
-                                    child: SpotView(spot),
-                                  ));
-                            },
+                              },
+                            ),
+                          );
+                        }
+                        Spot spot = spotList[index];
+                        return Container(
+                            width: MediaQuery.of(context).size.width,
+                            child: Padding(
+                              padding: const EdgeInsets.all(15.0),
+                              child: SpotView(spot),
+                            ));
+                      },
+                    ),
+                  ),
+                  MapView(spotList, getSpots, builderKey),
+                ]),
+                Positioned(
+                  bottom: 40,
+                  child: Container(
+                    width: 150,
+
+                    decoration: BoxDecoration(
+
+                        borderRadius:
+                        BorderRadius.all(Radius.circular(20)),
+                        color: Colors.grey
+                    ),
+
+                    child: Container(
+                      child: const TabBar(
+
+                        tabs: [
+                          Padding(
+                            padding: EdgeInsets.all(8.0),
+                            child: Icon(Icons.list),
                           ),
-                          MapView(snapshot.data, location),
-                        ]),
-                        Positioned(
-                          bottom: 40,
-                          child: Container(
-                              width: 150,
 
-                              decoration: BoxDecoration(
-
-                                borderRadius:
-                                    BorderRadius.all(Radius.circular(20)),
-                                color: Colors.grey
-                              ),
-
-                              child: Container(
-                                child: const TabBar(
-
-                                  tabs: [
-                                    Padding(
-                                      padding: EdgeInsets.all(8.0),
-                                      child: Icon(Icons.list),
-                                    ),
-
-                                    Padding(
-                                      padding: EdgeInsets.all(8.0),
-                                      child: Icon(Icons.map),
-                                    )],
-                                  indicator:  BoxDecoration(
-
-                                      borderRadius:
-                                      BorderRadius.all(Radius.circular(20)),
-                                      color: Colors.black
-                                  ),
-                                ),
-                              ),
-                          ),
+                          Padding(
+                            padding: EdgeInsets.all(8.0),
+                            child: Icon(Icons.map),
+                          )],
+                        indicator:  BoxDecoration(
+                            borderRadius:
+                            BorderRadius.all(Radius.circular(20)),
+                            color: Colors.black
                         ),
-                      ],
-                    ));
-              },
-            ),
+                      ),
+                    ),
+                  ),
+                ),
+              ],
+            )),
           ],
         ),
       ),
     );
   }
 
-  Future<List<Spot>> getSpots() async {
-
-    return await SpotFunctions.getSpots(Store.position!.longitude.toString(), Store.position!.latitude.toString(), 4);
+  Future<List<Spot>> getSpots(double radius, bool refresh) async {
+    if(spotList.isEmpty || refresh){
+      print("loading new spotlist");
+      List<Spot> temp = await SpotFunctions.getSpots(Store.getListViewLocation()!.longitude.toString(), Store.getListViewLocation()!.latitude.toString(), radius);
+      setState((){
+        spotList = temp;
+      });
+    }
+    return spotList;
   }
+
+
 
   Future<Widget?> buildLocationDialog(BuildContext context) {
     return showGeneralDialog<Widget>(
         context: context,
         pageBuilder: (context, animation, secondaryAnimation) {
-          return LocationDialog.getLocationDialog(context, location);
+          return LocationDialog.getLocationDialog(context);
         });
   }
 }

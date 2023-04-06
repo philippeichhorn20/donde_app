@@ -56,7 +56,10 @@ autofocus: true,
                     ),
                   );
                 },
-                title: Text("Add a new location", style: UITemplates.buttonTextStyle,),
+                title: Padding(
+                  padding: const EdgeInsets.all(8.0),
+                  child: Text("Not found? Create a new one!", style: UITemplates.buttonTextStyle,),
+                ),
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(20),
                 ),

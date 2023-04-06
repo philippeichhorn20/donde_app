@@ -10,6 +10,7 @@ import 'package:donde/UITemplates.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:flutter_native_image/flutter_native_image.dart';
 import 'dart:io' as Io;
 import 'package:image/image.dart' as img;
 import 'package:image_picker/image_picker.dart';
@@ -28,7 +29,7 @@ class AddReview extends StatefulWidget {
 class _AddReviewState extends State<AddReview> {
   CameraDescription? camera;
   CameraController? camController;
-  XFile? pic;
+  File? pic;
   TextEditingController textControl = TextEditingController();
   double valueSlider = 0;
   Future? _future;
@@ -60,8 +61,28 @@ class _AddReviewState extends State<AddReview> {
         body: SingleChildScrollView(
           child: Column(
             children: [
-              SizedBox(
-                height: 100,
+              Padding(
+                padding: const EdgeInsets.only(top: 40.0, left: 25, bottom: 20),
+                child: Align(
+                  alignment: Alignment.centerLeft,
+                  child: Container(
+                    decoration: BoxDecoration(
+                      shape: BoxShape.circle,
+                      color: Colors.white12,
+                    ),
+                    child: TextButton(
+
+                      child: Icon(Icons.close, color: Colors.white,),
+                      onPressed: () {
+                        Navigator.pushReplacement(context,
+                          CupertinoPageRoute(
+                            builder: (context) => HomePage(),
+                          ),
+                        );
+                      },
+                    ),
+                  ),
+                ),
               ),
               FutureBuilder<void>(
                 future: _future,
@@ -88,6 +109,8 @@ class _AddReviewState extends State<AddReview> {
                                     child: SizedBox(
                                       width: 300,
                                       child: TextField(
+                                        cursorColor: Colors.black,
+
                                         maxLines: null,
                                         minLines: 1,
                                         expands: false,
@@ -142,9 +165,11 @@ class _AddReviewState extends State<AddReview> {
                                     child: TextButton(
 
                                         onPressed: ()async{
-                                          XFile? xfile = await picImageFromLibrary();
+                                          File? xfile = await picImageFromLibrary();
                                           setState(() {
-                                            pic = xfile;
+                                            if(xfile!= null){
+                                              pic = File(xfile.path);
+                                            }
                                           });
                                         },
                                         child: Icon(Icons.photo_library,color: Colors.black,size: 25,),
@@ -167,7 +192,6 @@ class _AddReviewState extends State<AddReview> {
                   onPressed: () async {
                     if (pic == null) {
                     await takePictureandResize();
-                     print(pic == null);
                       setState(() {
                         pic = pic;
                       });
@@ -195,6 +219,8 @@ class _AddReviewState extends State<AddReview> {
                             builder: (context) => HomePage(),
                           ),
                         );
+                      }else{
+                        UITemplates.showErrorMessage(context, "Please try again");
                       }
                     },
                     style: UITemplates.buttonStyle,
@@ -209,7 +235,11 @@ class _AddReviewState extends State<AddReview> {
 
 
   Future<void> takePictureandResize()async{
-    pic = await camController!.takePicture();
+    XFile xTemp = await camController!.takePicture();
+    File compressedFile = await FlutterNativeImage.compressImage(xTemp.path,
+      quality: 2,);
+
+    pic = compressedFile;
   }
 
 
@@ -223,8 +253,8 @@ class _AddReviewState extends State<AddReview> {
       camera = cameras.first;
       camController = CameraController(
         camera!,
-        ResolutionPreset.medium,
-        imageFormatGroup: ImageFormatGroup.yuv420,
+        ResolutionPreset.ultraHigh,
+        imageFormatGroup: ImageFormatGroup.jpeg,
       );
       await camController!.initialize();
 
@@ -241,10 +271,19 @@ class _AddReviewState extends State<AddReview> {
     return await ReviewFunctions.saveReview(review) ? review : null;
   }
 
-  Future<XFile?> picImageFromLibrary()async{
+  Future<File?> picImageFromLibrary()async{
     final ImagePicker picker = ImagePicker();
+    XFile? temp = await picker.pickImage(source: ImageSource.gallery, imageQuality: 1);
+    if(temp == null){
+      return null;
+    }else{
+      File compressedFile = await FlutterNativeImage.compressImage(temp.path,
+        quality: 2,);
+      return compressedFile;
+    }
+
 
 // Pick an image.
-    return await picker.pickImage(source: ImageSource.gallery, imageQuality: 1);
+
   }
 }

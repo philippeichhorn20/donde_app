@@ -33,18 +33,21 @@ class SignUpFunctions{
 
 
   static Future<bool> logIn(String phone, password)async{
-    final AuthResponse res = await Store.supabase.auth.signInWithPassword(
-      phone: phone.replaceAll(" ", ""),
-      password: password,
-    );
-    final Session? session = res.session;
-    final User? user = res.user;
-    SharedPreferences inst = await SharedPreferences.getInstance();
-    inst.setString("phone",phone.replaceAll(" ", "") );
-    inst.setString("password",password);
-    Store.initUser();
-
-    return res.user != null;
+try{
+  final AuthResponse res = await Store.supabase.auth.signInWithPassword(
+    phone: phone.replaceAll(" ", ""),
+    password: password,
+  );
+  final Session? session = res.session;
+  final User? user = res.user;
+  SharedPreferences inst = await SharedPreferences.getInstance();
+  inst.setString("phone",phone.replaceAll(" ", "") );
+  inst.setString("password",password);
+  Store.initUser();
+  return res.user != null;
+}catch (e){
+  return false;
+}
   }
 
   static Future<bool> logInFromStorage()async{

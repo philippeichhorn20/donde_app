@@ -2,6 +2,8 @@ import 'package:donde/BackendFunctions/LocationServices.dart';
 import 'package:donde/BackendFunctions/SpotFunctions.dart';
 import 'package:donde/BasicUIElements/ListTiles.dart';
 import 'package:donde/Classes/Spot.dart';
+import 'package:donde/MainViews/AddReview.dart';
+import 'package:donde/MainViews/HomePage.dart';
 import 'package:donde/MainViews/SpotView.dart';
 import 'package:donde/UITemplates.dart';
 import 'package:flutter/cupertino.dart';
@@ -22,7 +24,6 @@ class NewSpotLocation extends StatefulWidget {
 
 class _NewSpotLocationState extends State<NewSpotLocation> {
   TextEditingController street = TextEditingController();
-  TextEditingController city = TextEditingController();
   Location? location;
 
   Map<Placemark,Location> countries = {};
@@ -37,79 +38,115 @@ class _NewSpotLocationState extends State<NewSpotLocation> {
           bottomOpacity: 0,
         ),
         body: Center(
-          child: Column(
+          child: Stack(
+            alignment: Alignment.center,
             children: [
-              Container(
-                width: MediaQuery.of(context).size.width*.8,
-                child: TextField(
-                  autofocus: true,
+              Column(
+                children: [
+                  Container(
+                    width: MediaQuery.of(context).size.width*.8,
+                    child: TextField(
+                      autofocus: true,
+                      cursorColor: Colors.black,
 
-                  controller: street,
-                  decoration:InputDecoration(
-                    fillColor: Colors.white12,
-                    hintText: "Street",
+                      controller: street,
+                      decoration:InputDecoration(
+                        fillColor: Colors.white12,
+                        hintText: "Street",
 
-                    hintStyle: UITemplates.descriptionStyle,
-                    focusedBorder: UITemplates.appBarInputBorder,
-                    filled: true,
-                    border: UITemplates.appBarInputBorder,
-                    enabledBorder: UITemplates.appBarInputBorder,
-                  ),
-                ),
-              ),
-              SizedBox(height: 30,),
-              Container(
-                width: MediaQuery.of(context).size.width*.8,
-                child: TextField(
-                  controller: city,
-                  decoration:InputDecoration(
-                    fillColor: Colors.white12,
-                    hintText: "City",
-                    hintStyle: UITemplates.descriptionStyle,
-                    focusedBorder: UITemplates.appBarInputBorder,
-                    filled: true,
-                    border: UITemplates.appBarInputBorder,
-                    enabledBorder: UITemplates.appBarInputBorder,
-                  ),
-                  onSubmitted: (value) async{
-               countries= await getCountriesFromAdress(street.text+", "+city.text);
-               print(countries.length);
-                  },
-                ),
-
-              ),
-              TextButton(onPressed: () async{
-                await fillWithCurrentLocation();
-              }, child: Text("fill")),
-              ListView.builder(
-                scrollDirection: Axis.vertical,
-                shrinkWrap: true,
-                itemCount: countries.length,
-                itemBuilder: (context, index) {
-                  MapEntry<Placemark,Location> country = countries.entries.elementAt(index);
-                  return ListTile(
-                    onTap: () {
-                      setState(() {
-                        location = country.value;
-                      });
-                    },
-                    title: Text(country.key.country!),
-                    subtitle:  Text(country.key.locality!),
-                    tileColor: country.value != location?Colors.white12:Colors.grey,);
-                },
-              ),
-              TextButton(
-
-                  onPressed: () async{
-                    Spot? spot = await saveSpot();
-                if(spot != null){
-                  Navigator.of(context).pushReplacement(
-                    CupertinoPageRoute(
-                      builder: (context) => SpotView(spot!),
+                        hintStyle: UITemplates.descriptionStyle,
+                        focusedBorder: UITemplates.appBarInputBorder,
+                        filled: true,
+                        border: UITemplates.appBarInputBorder,
+                        enabledBorder: UITemplates.appBarInputBorder,
+                      ),
+                      onChanged: (value) async{
+                        countries= await getCountriesFromAdress(street.text);
+                        setState(() {
+                          countries = countries;
+                        });
+                        print(countries.length);
+                      },
                     ),
-                  );
-                }
-              }, child: Text("save")),
+                  ),
+                  SizedBox(height: 100,),
+                  Container(
+                    padding: EdgeInsets.only(left:20, bottom: 10),
+                    alignment: Alignment.centerLeft,
+                    child: Text("Select the closest adress to safe the new spot",
+                      textAlign: TextAlign.left,
+                      style: UITemplates.descriptionStyle,),
+                  ),
+                  ListView.builder(
+                    scrollDirection: Axis.vertical,
+                    shrinkWrap: true,
+                    itemCount: countries.length,
+                    itemBuilder: (context, index) {
+                      MapEntry<Placemark,Location> country = countries.entries.elementAt(index);
+                      return ListTile(
+                        onTap: () async{
+                          setState(() {
+                            location = country.value;
+                          });
+                          Spot? spot = await saveSpot();
+                          if(spot != null){
+                            Navigator.of(context).push(
+                              CupertinoPageRoute(
+                                builder: (context) => AddReview(spot),
+                              ),
+                            );
+                          }else{
+                            UITemplates.showErrorMessage(context, "Please, try again");
+                          }
+                        },
+                        title: Text(country.key.street!),
+                        subtitle:  Text(country.key.locality!+", "+ country.key.country!),
+                        tileColor: country.value != location?Colors.white12:Colors.grey,);
+                    },
+                  ),
+
+                ],
+              ),
+              Positioned(
+                bottom: 60,
+                child: Row(
+                  crossAxisAlignment: CrossAxisAlignment.end,
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Column(
+                      children: [
+                        Padding(
+                          padding: const EdgeInsets.all(8.0),
+                          child: Text("I am here now, so...", style: UITemplates.descriptionStyle,),
+                        ),
+                        Container(
+                          width: MediaQuery.of(context).size.width*.8,
+                          height: 50,
+                          child: ElevatedButton(
+                            onPressed: ()async{
+                              await fillWithCurrentLocation();
+                              Spot? spot = await saveSpot();
+                              if(spot != null){
+                                Navigator.of(context).push(
+                                  CupertinoPageRoute(
+                                    builder: (context) => AddReview(spot),
+                                  ),
+                                );
+                              }else{
+                                UITemplates.showErrorMessage(context, "Please, try again");
+                              }
+
+                            },
+                            child: Text("use my location", style: UITemplates.buttonTextStyle,),
+                            style: UITemplates.buttonStyle,
+                          ),
+                        ),
+                      ],
+                    ),
+
+                  ],
+                ),
+              )
             ],
           ),
         ),
@@ -118,21 +155,25 @@ class _NewSpotLocationState extends State<NewSpotLocation> {
   }
 
   Future<bool> fillWithCurrentLocation()async{
-    Placemark? placemark = await LocationServices.getAdressOfCurrentLocation();
-    print("here");
+    Location loc = Location(latitude: 0, longitude: 0, timestamp: DateTime.now());
+
+    Placemark? placemark = await LocationServices.getAdressOfCurrentLocation(loc);
+
 
     if(placemark == null){
       return false;
     }
     print("here");
     print(placemark!.name??"not found");
-    city.text = placemark!.locality??"";
     street.text = placemark!.street??"";
+    location = loc;
+
     return true;
   }
 
   Future<Spot?> saveSpot()async{
-    Spot spot = Spot(widget.name, 0, 0, street.text+", "+city.text, widget.description, widget.type);
+    if(location== null) return null;
+    Spot spot = Spot(widget.name, 0, 0, street.text, widget.description, widget.type);
     spot.lat = location!.latitude;
     spot.long = location!.longitude;
     if(await SpotFunctions.saveSpot(spot)){
@@ -140,6 +181,17 @@ class _NewSpotLocationState extends State<NewSpotLocation> {
     }
     return null;
   }
+
+  Future<Spot?> saveSpotFromList()async{
+    Spot spot = Spot(widget.name, 0, 0, street.text, widget.description, widget.type);
+    spot.lat = location!.latitude;
+    spot.long = location!.longitude;
+    if(await SpotFunctions.saveSpot(spot)){
+      return spot;
+    }
+    return null;
+  }
+
 
   Future<Map<Placemark,Location>> getCountriesFromAdress(String str)async{
     List<Location> locations = await LocationServices.getLocationsFromString(str);

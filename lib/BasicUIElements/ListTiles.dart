@@ -102,10 +102,13 @@ class ListTiles{
                       child: FutureBuilder(
                         future: reviewPic,
                         builder: (context, snapshot) {
-                          if(snapshot.connectionState != ConnectionState.done || snapshot.data == null){
+                          if(snapshot.connectionState == ConnectionState.waiting){
                             return UITemplates.loadingAnimation;
                           }
-                        return Image.memory(snapshot.data!, fit: BoxFit.fill,);
+                          if(snapshot.data == null){
+                            return const Center(child: Icon(Icons.error, color: Colors.grey,size: 40,),);
+                          }
+                        return Image.memory(snapshot.data!, fit: BoxFit.cover,);
                       },),
                     ),
                   ),
@@ -120,14 +123,19 @@ class ListTiles{
                 Positioned(
                     top: 10,
                     right: 10,
-                    child: TextButton(onPressed: ()async {
-                      print("deleting");
-                      await ReviewFunctions.deleteReview(review);
-                      setGenState((){
-                        review.spot.reviews!.remove(review);
-                      });
-                    },
-                      child: Icon(Icons.delete_forever, color: Colors.red,),
+                    child: Container(
+                      decoration: BoxDecoration(
+                        shape: BoxShape.circle,
+                        color: Colors.grey,
+                      ),
+                      child: TextButton(onPressed: ()async {
+                        await ReviewFunctions.deleteReview(review);
+                        setGenState((){
+                          review.spot.reviews!.remove(review);
+                        });
+                      },
+                        child: Icon(Icons.delete_forever, color: Colors.white,),
+                      ),
                     )),
               ],
             ),
@@ -142,7 +150,7 @@ class ListTiles{
                     children: [
                       if(review.createdAt != null)
                         Text("${review.createdAt!.day}.${review.createdAt!.month}.${review.createdAt!.year}", style: UITemplates.descriptionStyle,),
-                      Text("\t•\tby ${review.author.username}\t",
+                      Text("\t•\tby ${review.author.username}\t•\t",
                         style: UITemplates.descriptionStyle,
                       ),
                       if(!review.author.amFollowing)
@@ -154,23 +162,28 @@ class ListTiles{
                             print(review.author.amFollowing);
                           });
                         },
-
                         style: ElevatedButton.styleFrom(
-                          padding: EdgeInsets.only(left:4,right: 4),
-                          backgroundColor: review.author.amFollowing?Colors.white12:Colors.white,
+
+                          tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                          padding: EdgeInsets.only(top:3, bottom: 3,left: 5, right: 5),
+                          minimumSize: Size.zero,
+                          backgroundColor: review.author.amFollowing?Colors.grey:Colors.grey,
                           shadowColor: Colors.transparent,
                           shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(10),
+                            borderRadius: BorderRadius.circular(5),
                           ),),
+
                           child: Text((review.author.amFollowing?"unfollow":"follow"),
                           style: TextStyle(
                             color: review.author.amFollowing?Colors.white24:Colors.black,
-                            fontWeight: FontWeight.bold
+                            fontWeight: FontWeight.bold,
+                            fontSize: 14
                           ),
 
                           ),
 
                       ),
+
                     ],
                   ),
                 ),

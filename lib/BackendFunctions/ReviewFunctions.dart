@@ -1,5 +1,7 @@
 
 
+
+
 import 'dart:io';
 
 import 'package:camera/camera.dart';
@@ -27,12 +29,12 @@ class ReviewFunctions{
         });
     review.id = res;
     if(res != 0){
-      File file = File(review.image!.path);
+      File file = review.image!;
 
       final storageResponse = await Store.supabase
           .storage
           .from('reviewpics/reviewpics/public/')
-          .upload('${res.toString()}',file);
+          .upload(res.toString(),file);
       return true;
     }
     return false;
@@ -44,7 +46,6 @@ class ReviewFunctions{
       "spot": spot.id,
     });
     List<Review> reviews = [];
-    print(res.first.runtimeType.toString());
 
     await Future.forEach(res,(element) async{
 
@@ -62,17 +63,29 @@ class ReviewFunctions{
       return review.pic;
     }
     if(review.id !=null){
-      print("reviewid");
-      print(review.id);
-
       Uint8List data = await Store.supabase.storage
             .from("reviewpics")
             .download("reviewpics/public/"+review.id.toString());
+      print("done");
       review.pic = data;
       return data;
     }
   }
 
+  static Future<List<Review>> getMyReviews()async{
+    var res = await Store.supabase.rpc('getmyreviews',params: {
+    });
+    List<Review> reviews = [];
+
+    await Future.forEach(res,(element) async{
+
+      Review review = Review.fromMap(element as Map<String, dynamic>, Spot("", 0, 0, "", "", SpotTypes.Spot));
+      review.author = await RelationshipFunctions.getAuthorOfReview(review);
+
+      reviews.add(review);
+    });
+    return reviews;
+  }
 
   static Future<bool> deleteReview(Review rev) async{
     //todo: return

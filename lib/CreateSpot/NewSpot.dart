@@ -35,6 +35,8 @@ class _NewSpotState extends State<NewSpot> {
               padding: const EdgeInsets.all(8.0),
               child: TextField(
                 autofocus: true,
+                cursorColor: Colors.black,
+
                 controller: nameControl,
                 decoration:InputDecoration(
                   fillColor: Colors.white12,
@@ -52,6 +54,8 @@ class _NewSpotState extends State<NewSpot> {
             Padding(
               padding: const EdgeInsets.all(8.0),
               child: TextField(
+                cursorColor: Colors.black,
+
                 controller: descriptionControl,
 
                 inputFormatters: [
@@ -98,11 +102,16 @@ class _NewSpotState extends State<NewSpot> {
                 style: UITemplates.buttonStyle,
 
                 onPressed: () async{
-                  Navigator.of(context).push(
-                    CupertinoPageRoute(
-                      builder: (context) => NewSpotLocation(nameControl.text,descriptionControl.text,SpotTypes.values[spotTypeIndex]),
-                    ),
-                  );
+                  if(nameControl.text.isEmpty || nameControl.text == ""){
+                    UITemplates.showErrorMessage(context, "Add a name");
+                  }else{
+                    Navigator.of(context).push(
+                      CupertinoPageRoute(
+                        builder: (context) => NewSpotLocation(nameControl.text,descriptionControl.text,SpotTypes.values[spotTypeIndex]),
+                      ),
+                    );
+                  }
+
               },child: Text("next", style: UITemplates.buttonTextStyle),),
             )
           ],

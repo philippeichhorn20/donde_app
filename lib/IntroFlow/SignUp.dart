@@ -1,3 +1,4 @@
+import 'package:donde/BackendFunctions/RelationshipFunctions.dart';
 import 'package:donde/BackendFunctions/SignUpFunctions.dart';
 import 'package:donde/IntroFlow/UserMatch.dart';
 import 'package:donde/Store.dart';
@@ -5,12 +6,12 @@ import 'package:donde/UITemplates.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:onesignal_flutter/onesignal_flutter.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 class SignUp extends StatefulWidget {
-
-  final String contactName;
-  const SignUp(this.contactName);
+  final String refferal;
+  const SignUp(this.refferal);
 
   @override
   _SignUpState createState() => _SignUpState();
@@ -37,10 +38,11 @@ class _SignUpState extends State<SignUp> {
                 Padding(
                   padding: const EdgeInsets.all(8.0),
                   child: TextField(
+                    cursorColor: Colors.black,
+
                     autofocus: true,
                     controller: usernameControl,
                     style: UITemplates.importantTextStyle,
-                    keyboardType: TextInputType.phone,
                     decoration: InputDecoration(
                         hintText: "Username",
                       hintStyle: UITemplates.importantTextStyleHint,
@@ -53,6 +55,8 @@ class _SignUpState extends State<SignUp> {
                 Padding(
                   padding: const EdgeInsets.all(8.0),
                   child: TextField(
+                    cursorColor: Colors.black,
+
                     controller: numberControl,
                     style: UITemplates.importantTextStyle,
                     keyboardType: TextInputType.phone,
@@ -70,6 +74,8 @@ class _SignUpState extends State<SignUp> {
                 Padding(
                   padding: const EdgeInsets.all(8.0),
                   child: TextField(
+                    cursorColor: Colors.black,
+
                     controller: passwordControl,
                     style: UITemplates.importantTextStyle,
                     obscureText: true,
@@ -96,16 +102,26 @@ class _SignUpState extends State<SignUp> {
                 child: Text("Sign Up", style: UITemplates.buttonTextStyle,),
                 style: UITemplates.buttonStyle,
                 onPressed: ()async{
-                  if(await signUpCorrect()){
+                  OneSignal.shared.promptUserForPushNotificationPermission().then((accepted) {
+                    print("Accepted permission: $accepted");
+                  });
+                  String s = await signUpCorrect();
+                  if((s=="")){
+                    OneSignal.shared.setExternalUserId(numberControl.text);
+
                     Navigator.of(context).push(
                       CupertinoPageRoute(
-                        builder: (context) => UserMatch(widget.contactName),
+                        builder: (context) => UserMatch(),
                       ),
                     );
+                  }else{
+                    UITemplates.showErrorMessage(context, s);
                   }
                 },
               ),
-            ),)
+            ),),
+            Positioned(top: 10, left: 0, child: UITemplates.goBackArrow(context)),
+
           ],
         ),
       ),
@@ -113,12 +129,21 @@ class _SignUpState extends State<SignUp> {
   }
 
 
-  Future<bool> signUpCorrect()async{
-    User? user = await SignUpFunctions.signUp(numberControl.text, passwordControl.text, usernameControl.text);
-    if(user== null){
-      return false;
-    }else{
-      return true;
+  Future<String> signUpCorrect()async {
+    if(usernameControl.text == "" || passwordControl.text == ""){
+      return "Enter your credentials";
     }
+    try {
+      User? user = await SignUpFunctions.signUp(
+          numberControl.text, passwordControl.text, usernameControl.text, );
+      await RelationshipFunctions.incrementSocialGraph(widget.refferal);
+      return "";
+    } on AuthException catch (e) {
+      return e.message;
+    }
+    return "";
   }
+
+
+
 }

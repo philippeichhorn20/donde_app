@@ -1,4 +1,7 @@
 
+
+import 'dart:io';
+
 import 'package:camera/camera.dart';
 import 'package:donde/BackendFunctions/RelationshipFunctions.dart';
 import 'package:donde/Classes/Spot.dart';
@@ -12,7 +15,7 @@ class Review{
   String text;
   double? textColor;
   MyUser author;
-  XFile? image;
+  File? image;
   Spot spot;
   bool liked = false;
   int? id;

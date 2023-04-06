@@ -3,14 +3,13 @@ import 'package:donde/BasicUIElements/ListTiles.dart';
 import 'package:donde/Classes/MyUser.dart';
 import 'package:donde/IntroFlow/InviteFriends.dart';
 import 'package:donde/UITemplates.dart';
+import 'package:firebase_analytics/firebase_analytics.dart';
 import 'package:flutter/cupertino.dart';
 import "package:flutter/material.dart";
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 class UserMatch extends StatefulWidget {
 
-  final String contactName;
-  const UserMatch(this.contactName);
 
 
 
@@ -31,7 +30,7 @@ class _UserMatchState extends State<UserMatch> {
           Positioned(
             top: 0,
             child: FutureBuilder(
-                future: getFriends(widget.contactName),
+                future: getFriends(""),
                 builder: (context, snapshot){
                   if(snapshot == null || snapshot.data == null || snapshot.data!.length ==0){
                     return SizedBox(height: 10, width: 10,);
@@ -55,6 +54,8 @@ class _UserMatchState extends State<UserMatch> {
                 height: 50,
                 child: TextButton(
                   onPressed: (){
+                    FirebaseAnalytics.instance.logEvent(name: "exit_user_match");
+
                     Navigator.of(context).pushReplacement(
                       CupertinoPageRoute(
                         builder: (context) => InviteFriends(),
@@ -72,7 +73,7 @@ class _UserMatchState extends State<UserMatch> {
   }
 
   Future<List<MyUser>> getFriends(String contactName)async{
-    print("User match cakled");
+    FirebaseAnalytics.instance.logEvent(name: "user_match");
       return GetFriends.getFriendsFromContact(contactName);
 
   }

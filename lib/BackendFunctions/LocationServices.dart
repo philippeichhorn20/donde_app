@@ -62,9 +62,9 @@ class LocationServices{
   }
   static String distanceToString(int dist){
     if(dist < 1000){
-      return "$dist meter";
+      return "${dist} m";
     }else{
-      return "${(dist/1000).toInt()} km";
+      return "${(dist/1000).toInt()}km away";
     }
   }
 
@@ -80,11 +80,12 @@ class LocationServices{
   }
 
 
-  static Future<Placemark?> getAdressOfCurrentLocation()async{
+  static Future<Placemark?> getAdressOfCurrentLocation(Location loc)async{
     Position position = await getUsersLocation();
     List<Placemark> placemarks = await placemarkFromCoordinates(position.latitude, position.longitude);
     Placemark? placemark = placemarks.first;
-
+    loc = Location(longitude: position.longitude, latitude: position.latitude, timestamp: DateTime.now());
+    print(position.longitude.toString()+","+position.latitude.toString());
     return placemark;
   }
 

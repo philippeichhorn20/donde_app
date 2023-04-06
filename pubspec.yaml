@@ -45,9 +45,12 @@ dependencies:
   image: ^4.0.15
   image_picker: ^0.8.7+1
   firebase_core: ^2.0.0
-  firebase_dynamic_links: ^0.5.0+11
+  firebase_dynamic_links: ^5.1.0
   share_plus: ^6.3.1
-
+  flutter_contacts: ^1.1.6
+  flutter_native_image: ^0.0.6+1
+  firebase_analytics:
+  onesignal_flutter: ^3.5.0
 dev_dependencies:
   flutter_test:
     sdk: flutter

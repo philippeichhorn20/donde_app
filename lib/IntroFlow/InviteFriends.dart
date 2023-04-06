@@ -35,7 +35,7 @@ class _InviteFriendsState extends State<InviteFriends> {
                         style: UITemplates.buttonTextStyle),
                     style: UITemplates.buttonStyle,
                   ),
-                ))
+                )),
           ],
         ),
       ),

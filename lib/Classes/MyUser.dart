@@ -13,9 +13,10 @@ class MyUser{
     MyUser user =   MyUser(
         userMap.remove("username"),
         "",
-        userMap.remove("amfollowing")??false,
+      userMap.remove("amfollowing")??false,
       userMap.remove("user_id"),
     );
+
     return user;
   }
 }

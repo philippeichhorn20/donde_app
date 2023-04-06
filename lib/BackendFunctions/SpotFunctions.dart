@@ -6,12 +6,13 @@ import 'package:donde/Store.dart';
 class SpotFunctions{
 
 
-  static Future<List<Spot>> getSpots(String long, String lat, int radius)async{
-    print("here");
+  static Future<List<Spot>> getSpots(String long, String lat, double radius)async{
+    print("h45454545ere");
 
     var res = await Store.supabase.rpc('getspots',params: {
-      "lat":int.tryParse(lat),
-      "long":int.tryParse(long)
+      "lat":double.tryParse(lat),
+      "long":double.tryParse(long),
+      "rad": radius
     });
     print("here");
     List<Spot> spots = [];
@@ -50,4 +51,17 @@ class SpotFunctions{
 
     return true;
   }
+
+  static Future<Spot> getspotfromid(String id)async{
+    var res = await Store.supabase.rpc('getspotfromid',params: {
+      "id":int.tryParse(id)
+    });
+
+    List<Spot> spots = [];
+    res.forEach((element) {
+      spots.add(Spot.fromMap(element));
+    });
+    return spots.first;
+  }
+
 }
