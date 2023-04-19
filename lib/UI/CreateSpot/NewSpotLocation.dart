@@ -1,10 +1,14 @@
 import 'package:donde/BackendFunctions/LocationServices.dart';
 import 'package:donde/BackendFunctions/SpotFunctions.dart';
-import 'package:donde/BasicUIElements/ListTiles.dart';
+import 'package:donde/Classes/Review.dart';
+import 'package:donde/Store.dart';
+import 'package:donde/UI/BasicUIElements/ListTiles.dart';
 import 'package:donde/Classes/Spot.dart';
-import 'package:donde/MainViews/AddReview.dart';
-import 'package:donde/MainViews/HomePage.dart';
-import 'package:donde/MainViews/SpotView.dart';
+import 'package:donde/UI/BasicUIElements/PopUps.dart';
+import 'package:donde/UI/ReviewFlow/AddReview.dart';
+import 'package:donde/UI/MainViews/HomePage.dart';
+import 'package:donde/UI/MainViews/SpotView.dart';
+import 'package:donde/UI/ReviewFlow/PostCheck.dart';
 import 'package:donde/UITemplates.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
@@ -16,7 +20,8 @@ class NewSpotLocation extends StatefulWidget {
   final String name;
   final String description;
   final SpotTypes type;
-  NewSpotLocation(this.name,this.description,this.type);
+  final Review review;
+  NewSpotLocation(this.name,this.description,this.type, this.review);
 
   @override
   _NewSpotLocationState createState() => _NewSpotLocationState();
@@ -32,6 +37,7 @@ class _NewSpotLocationState extends State<NewSpotLocation> {
   Widget build(BuildContext context) {
     return Container(
       child: Scaffold(
+        resizeToAvoidBottomInset: false,
         appBar: AppBar(
           shadowColor: Colors.transparent,
           backgroundColor: Colors.transparent,
@@ -60,12 +66,20 @@ class _NewSpotLocationState extends State<NewSpotLocation> {
                         border: UITemplates.appBarInputBorder,
                         enabledBorder: UITemplates.appBarInputBorder,
                       ),
-                      onChanged: (value) async{
+                      onSubmitted: (value) async{
                         countries= await getCountriesFromAdress(street.text);
                         setState(() {
                           countries = countries;
                         });
-                        print(countries.length);
+                      },
+                      onChanged: (value) async{
+                        if(value.length%2 == 0){
+                          countries= await getCountriesFromAdress(street.text);
+                          setState(() {
+                            countries = countries;
+                          });
+                        }
+
                       },
                     ),
                   ),
@@ -89,14 +103,25 @@ class _NewSpotLocationState extends State<NewSpotLocation> {
                             location = country.value;
                           });
                           Spot? spot = await saveSpot();
-                          if(spot != null){
+                          Review? review;
+                          if(spot!= null){
+                             review = await Review.addReview(widget.review.text, spot, widget.review.rating??0, widget.review.textColor??0, widget.review.image);
+                            if(review == null){
+                              UITemplates.showErrorMessage(context, "Please try again, later");
+                            }
+                          }else{
+                            UITemplates.showErrorMessage(context, "Please try again later");
+                          }
+                          if(spot != null&& review != null){
+                            spot.reviews.add(review);
                             Navigator.of(context).push(
                               CupertinoPageRoute(
-                                builder: (context) => AddReview(spot),
+                                builder: (context) => PostCheck(spot: spot, review: review!),
                               ),
                             );
+
                           }else{
-                            UITemplates.showErrorMessage(context, "Please, try again");
+                            UITemplates.showErrorMessage(context, "Make sure everything is complete");
                           }
                         },
                         title: Text(country.key.street!),
@@ -126,16 +151,28 @@ class _NewSpotLocationState extends State<NewSpotLocation> {
                             onPressed: ()async{
                               await fillWithCurrentLocation();
                               Spot? spot = await saveSpot();
-                              if(spot != null){
+                              Review? review;
+                              if(spot!= null){
+                                 review = await widget.review;
+                             if(review == null){
+                               UITemplates.showErrorMessage(context, "Please try again later");
+                             }
+                              }else{
+                                UITemplates.showErrorMessage(context, "Please try again later");
+                              }
+
+
+                              if(spot != null && review != null){
+                                spot.reviews.add(review);
                                 Navigator.of(context).push(
                                   CupertinoPageRoute(
-                                    builder: (context) => AddReview(spot),
+                                    builder: (context) => PostCheck(spot: spot, review: review!),
                                   ),
                                 );
+
                               }else{
                                 UITemplates.showErrorMessage(context, "Please, try again");
                               }
-
                             },
                             child: Text("use my location", style: UITemplates.buttonTextStyle,),
                             style: UITemplates.buttonStyle,
@@ -155,19 +192,16 @@ class _NewSpotLocationState extends State<NewSpotLocation> {
   }
 
   Future<bool> fillWithCurrentLocation()async{
-    Location loc = Location(latitude: 0, longitude: 0, timestamp: DateTime.now());
-
+    if(Store.position == null){
+      return false;
+    }
+    Location loc = Location(latitude: Store.position!.latitude, longitude: Store.position!.longitude, timestamp: DateTime.now());
     Placemark? placemark = await LocationServices.getAdressOfCurrentLocation(loc);
-
-
     if(placemark == null){
       return false;
     }
-    print("here");
-    print(placemark!.name??"not found");
-    street.text = placemark!.street??"";
+    street.text = placemark.street??"";
     location = loc;
-
     return true;
   }
 
@@ -176,20 +210,16 @@ class _NewSpotLocationState extends State<NewSpotLocation> {
     Spot spot = Spot(widget.name, 0, 0, street.text, widget.description, widget.type);
     spot.lat = location!.latitude;
     spot.long = location!.longitude;
-    if(await SpotFunctions.saveSpot(spot)){
-      return spot;
-    }
-    return null;
+
+    return spot;
   }
 
   Future<Spot?> saveSpotFromList()async{
     Spot spot = Spot(widget.name, 0, 0, street.text, widget.description, widget.type);
     spot.lat = location!.latitude;
     spot.long = location!.longitude;
-    if(await SpotFunctions.saveSpot(spot)){
-      return spot;
-    }
-    return null;
+
+    return spot;
   }
 
 

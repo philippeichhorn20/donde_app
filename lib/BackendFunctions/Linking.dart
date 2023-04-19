@@ -1,106 +1,115 @@
+import 'dart:ui';
+
 import 'package:donde/BackendFunctions/RelationshipFunctions.dart';
 import 'package:donde/BackendFunctions/SpotFunctions.dart';
-import 'package:donde/BasicUIElements/ListTiles.dart';
-import 'package:donde/BasicUIElements/PopUps.dart';
+import 'package:donde/UI/BasicUIElements/ListTiles.dart';
+import 'package:donde/UI/BasicUIElements/PopUps.dart';
 import 'package:donde/Classes/MyUser.dart';
 import 'package:donde/Classes/Spot.dart';
+import 'package:donde/UI/MainViews/SpotView.dart';
 import 'package:donde/Store.dart';
 import 'package:donde/UITemplates.dart';
 import 'package:firebase_dynamic_links/firebase_dynamic_links.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:image/image.dart';
 
 class Linking{
 
 
+  static MyUser? possibleReferral;
+  static DateTime? lastLinkUpdate;
 
-  static Future<Uri> createLinkToUser()async{
-    Uri link = await DynamicLinkParameters(
-      uriPrefix:"https://opendonde.page.link",
+  static Future<String> createLinkToUser()async{
+    final dynamicLinkParams = DynamicLinkParameters(
       link: Uri.parse("https://opendonde.page.link/?user=${Store.me.id}"),
-      androidParameters:  AndroidParameters(packageName: "com.donde.app.android"),
-      googleAnalyticsParameters:
-      GoogleAnalyticsParameters(source: "gh", medium: "hi", campaign: "h"),
-      iosParameters:  IOSParameters(bundleId: "com.donde.app.ios", appStoreId: "6447265098",
-          customScheme:"?user=${Store.me.id}" ),
-      socialMetaTagParameters: SocialMetaTagParameters(
-      ),
+      uriPrefix: "https://opendonde.page.link",
+      androidParameters: const AndroidParameters(packageName: "com.example.app.android"),
+      iosParameters: const IOSParameters(bundleId: "com.example.app.ios"),
       navigationInfoParameters: NavigationInfoParameters(
         forcedRedirectEnabled: true,
       ),
-    ).link;
-    return link;
+    );
+    final dynamicLink =
+    await FirebaseDynamicLinks.instance.buildShortLink(dynamicLinkParams);
+    return dynamicLink.shortUrl.toString();
   }
 
-  static Future<Uri> createLinkToSpot(Spot spot)async{
-    Uri link = await DynamicLinkParameters(
-      uriPrefix:"https://opendonde.page.link",
+  static Future<String> createLinkToSpot(Spot spot)async{
+    final dynamicLinkParams = DynamicLinkParameters(
       link: Uri.parse("https://opendonde.page.link/?user=${Store.me.id}&spot=${spot.id}"),
-      androidParameters:  AndroidParameters(packageName: "com.donde.app.android"),
-      googleAnalyticsParameters:
-      GoogleAnalyticsParameters(source: "gh", medium: "hi", campaign: "h"),
-      iosParameters:  IOSParameters(bundleId: "com.donde.app.ios", appStoreId: "6447265098",
-      customScheme:"?user=${Store.me.id}" ),
-      socialMetaTagParameters: SocialMetaTagParameters(
-      ),
-      navigationInfoParameters: NavigationInfoParameters(
-        forcedRedirectEnabled: true,
-      ),
-    ).link;
-    return link;
+      uriPrefix: "https://opendonde.page.link",
+      androidParameters: const AndroidParameters(packageName: "com.example.app.android"),
+      iosParameters: const IOSParameters(bundleId: "com.example.app.ios"),
+        navigationInfoParameters: NavigationInfoParameters(
+          forcedRedirectEnabled: true,
+        ),
+    );
+    final dynamicLink =
+    await FirebaseDynamicLinks.instance.buildShortLink(dynamicLinkParams);
+    return dynamicLink.shortUrl.toString();
   }
 
-  static Future<MyUser?> retrieveUser(Uri uri)async{
-    String? res = uri.queryParameters["user"];
-    if(res != null){
-      print("item found");
-      return await RelationshipFunctions.getUserFromId(res);
+  static Future<MyUser?> handlePotentialInitLinks()async{
+    PendingDynamicLinkData? pendingData = await FirebaseDynamicLinks.instance.getInitialLink();
+    if(pendingData== null){
+      return null;
     }
-    return null;
-  }
-
-  static Future<Spot?> retrieveSpot(Uri uri)async{
-    String? res = uri.queryParameters["spot"];
-    if(res != null){
-      return await SpotFunctions.getspotfromid(res);
+    MyUser? user;
+    if(pendingData.link.queryParameters["user"] != null) {
+      user = await RelationshipFunctions.getUserFromId(
+          pendingData.link.queryParameters["user"]!);
     }
-    return null;
+    return user;
   }
 
-  static Future<void> handlePotentialLinks(GlobalKey key)async{
-    print("link detector innit");
+
+  static Future<void> handlePotentialLinks(GlobalKey snackbarKey)async{
+    FirebaseDynamicLinks.instance.onLink.listen((PendingDynamicLinkData data) async{
 
 
-    FirebaseDynamicLinks.instance.onLink.listen( (linkData)async {
-      print(linkData.link.queryParameters.toString());
-
-      Spot? spot = await retrieveSpot(linkData.link);
-      MyUser? user = await retrieveUser(linkData.link);
-      print("items retrieved");
-
-      if(user!= null){
-        if(key.currentContext != null){
-          ListTiles.showSnackbar( key.currentContext!, user,key.currentState!.setState);
-        }
+      MyUser? user;
+      if(data.link.queryParameters["user"] != null) {
+         user = await RelationshipFunctions.getUserFromId(
+            data.link.queryParameters["user"]!);
+         possibleReferral = user;
       }
-      if(spot!=null){
-        print("spot found");
-        if(key.currentContext != null){
-          showDialog(context: key.currentContext!, builder: (context) {
-            return PopUps.spotPopup(spot);
+      Spot? spot;
+      if(data.link.queryParameters["spot"] != null) {
+        spot = await SpotFunctions.getspotfromid(data.link.queryParameters["spot"]!);
+      }
+        if(user != null){
+          if(snackbarKey.currentContext != null){
+            ScaffoldMessenger.of(snackbarKey.currentContext!).showSnackBar(
+                ListTiles.showSnackbar(user)
+            );
+          }
+        }
+        if(spot != null){
+          showDialog(context: snackbarKey.currentContext!, builder: (context) {
+            return BackdropFilter(
+              filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
+              child: Padding(
+                padding: const EdgeInsets.only(left:10.0,right: 10, top: 50,bottom: 40),
+                child: Container(
+                    decoration: BoxDecoration(
+                        color: Colors.black,
+                        border: Border.all(
+                          color: Colors.black,
+                        ),
+                        borderRadius: BorderRadius.all(Radius.circular(20))
+
+                    ),
+                    child: SingleChildScrollView(child: SpotView(spot!))),
+              ),
+            );
           },);
         }
+
+      if(data.link.queryParameters["spot"] != null){
+        Spot? spot = await SpotFunctions.getspotfromid(data.link.queryParameters["spot"]!);
       }
-
-    },
-
-     onError: (error) async{
-      print(error.stacktrace);
-
-      print(error.details);
-      print("error");
-    },
-    );
+    });
   }
 
 }

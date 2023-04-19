@@ -1,5 +1,6 @@
-import 'package:donde/IntroFlow/Welcome.dart';
-import 'package:donde/MainViews/HomePage.dart';
+import 'package:donde/UI/IntroFlow/Welcome.dart';
+import 'package:donde/UI/MainViews/HomePage.dart';
+import 'package:donde/UI/MainViews/Skeleton.dart';
 import 'package:donde/UITemplates.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
@@ -14,6 +15,8 @@ class _InviteFriendsState extends State<InviteFriends> {
   Widget build(BuildContext context) {
     return Container(
       child: Scaffold(
+        resizeToAvoidBottomInset: false,
+
         appBar: UITemplates.appbar("Invite friends"),
         body: Stack(
           alignment: Alignment.center,
@@ -24,10 +27,11 @@ class _InviteFriendsState extends State<InviteFriends> {
                   width: MediaQuery.of(context).size.width*.7,
                   height: 50,
                   child: TextButton(
+
                     onPressed: (){
                       Navigator.of(context).push(
                         CupertinoPageRoute(
-                          builder: (context) => HomePage(),
+                          builder: (context) => Skeleton(),
                         ),
                       );
                     },

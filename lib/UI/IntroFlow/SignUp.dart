@@ -1,6 +1,7 @@
 import 'package:donde/BackendFunctions/RelationshipFunctions.dart';
 import 'package:donde/BackendFunctions/SignUpFunctions.dart';
-import 'package:donde/IntroFlow/UserMatch.dart';
+import 'package:donde/UI/IntroFlow/ContactShareView.dart';
+import 'package:donde/UI/IntroFlow/UserMatch.dart';
 import 'package:donde/Store.dart';
 import 'package:donde/UITemplates.dart';
 import 'package:flutter/cupertino.dart';
@@ -28,6 +29,7 @@ class _SignUpState extends State<SignUp> {
   Widget build(BuildContext context) {
     return Container(
       child: Scaffold(
+        resizeToAvoidBottomInset: false,
         body: Stack(
           alignment: Alignment.center,
           children: [
@@ -103,15 +105,13 @@ class _SignUpState extends State<SignUp> {
                 style: UITemplates.buttonStyle,
                 onPressed: ()async{
                   OneSignal.shared.promptUserForPushNotificationPermission().then((accepted) {
-                    print("Accepted permission: $accepted");
                   });
                   String s = await signUpCorrect();
                   if((s=="")){
-                    OneSignal.shared.setExternalUserId(numberControl.text);
 
                     Navigator.of(context).push(
                       CupertinoPageRoute(
-                        builder: (context) => UserMatch(),
+                        builder: (context) => ContactShareView(),
                       ),
                     );
                   }else{
@@ -130,8 +130,11 @@ class _SignUpState extends State<SignUp> {
 
 
   Future<String> signUpCorrect()async {
-    if(usernameControl.text == "" || passwordControl.text == ""){
+    if(usernameControl.text == "" || passwordControl.text == ""||numberControl.text == ""){
       return "Enter your credentials";
+    }
+    if(numberControl.text.characters.first != "+"){
+      return "Add country code (+49 in Germany) to your phone number";
     }
     try {
       User? user = await SignUpFunctions.signUp(
@@ -141,9 +144,5 @@ class _SignUpState extends State<SignUp> {
     } on AuthException catch (e) {
       return e.message;
     }
-    return "";
   }
-
-
-
 }

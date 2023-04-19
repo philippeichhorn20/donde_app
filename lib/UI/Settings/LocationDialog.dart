@@ -1,5 +1,5 @@
 import 'package:donde/BackendFunctions/LocationServices.dart';
-import 'package:donde/BasicUIElements/ListTiles.dart';
+import 'package:donde/UI/BasicUIElements/ListTiles.dart';
 import 'package:donde/UITemplates.dart';
 import 'package:flutter/material.dart';
 import 'package:geocoding/geocoding.dart';

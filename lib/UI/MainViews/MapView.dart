@@ -2,7 +2,7 @@ import 'dart:math';
 import 'dart:ui';
 
 import 'package:donde/Classes/Spot.dart';
-import 'package:donde/MainViews/SpotView.dart';
+import 'package:donde/UI/MainViews/SpotView.dart';
 import 'package:donde/Store.dart';
 import 'package:donde/UITemplates.dart';
 import 'package:firebase_analytics/firebase_analytics.dart';
@@ -57,14 +57,18 @@ class _MapViewState extends State<MapView> {
             ),
             layers: [
               TileLayerOptions(
-                urlTemplate: "https://tile.openstreetmap.org/{z}/{x}/{y}.png",
-              ),
+                urlTemplate: "https://tiles.stadiamaps.com/tiles/outdoors/{z}/{x}/{y}{r}.png?api_key={api_key}",
+additionalOptions: {
+  "api_key": "1f0e23ae-654e-4e3a-a48f-ff510f9b0a00",
+}
+),
               MarkerLayerOptions(
                 key: key,
                 markers: widget.spotList.map((e) => Marker(point: LatLng(e.lat??0,e.long??0),
                   width: 40,
                   height: 40,
                   builder: (context) {
+
                   return ElevatedButton(
                     style: ElevatedButton.styleFrom(
                     backgroundColor: Colors.black,
@@ -78,15 +82,16 @@ class _MapViewState extends State<MapView> {
                         return BackdropFilter(
                           filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
                           child: Padding(
-                            padding: const EdgeInsets.only(left:10.0,right: 10, top: 50,bottom: 40),
+                            padding: const EdgeInsets.only(left:10.0,right: 10, top: 50,bottom: 150),
                             child: Container(
+                              height: 200,
                                 decoration: BoxDecoration(
+
                                   color: Colors.black,
                                     border: Border.all(
                                       color: Colors.black,
                                     ),
                                     borderRadius: BorderRadius.all(Radius.circular(20))
-
                                 ),
                                 child: SingleChildScrollView(child: SpotView(e))),
                           ),
@@ -96,7 +101,7 @@ class _MapViewState extends State<MapView> {
 
                     child: Container(
                         child:
-                    Icon(Icons.restaurant_menu,color: Colors.white,size: 25,)),
+                    Icon(e.getIcon(),color: Colors.white,size: 25,)),
 
                   );
                 },)).toList()
@@ -105,6 +110,7 @@ class _MapViewState extends State<MapView> {
             ],
 
           ),
+        /*
           Positioned(
               bottom: 100,
               right: 40,
@@ -116,8 +122,8 @@ class _MapViewState extends State<MapView> {
               await widget.forceNewSpots(((40000/pow(2,_mapController.zoom)) * 2).toDouble(), true);
             },
             child: Icon(Icons.refresh),
-
           ))
+         */
         ],
       ),
     );

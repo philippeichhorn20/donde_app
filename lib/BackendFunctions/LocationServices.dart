@@ -1,6 +1,8 @@
 import 'dart:math';
 
 import 'package:donde/Store.dart';
+import 'package:donde/UI/IntroFlow/LocationPermissionView.dart';
+import 'package:flutter/cupertino.dart';
 import 'package:geocoding/geocoding.dart';
 import 'package:geolocator/geolocator.dart';
 
@@ -8,28 +10,32 @@ import 'package:geolocator/geolocator.dart';
 class LocationServices{
 
 
-  static Future<Position> getUsersLocation()async{
+
+
+
+  static Future<Position?> getUsersLocation()async{
     bool serviceEnabled;
     LocationPermission permission;
 
     // Test if location services are enabled.
     serviceEnabled = await Geolocator.isLocationServiceEnabled();
     if (!serviceEnabled) {
-      // Location services are not enabled don't continue
-      // accessing the position and request users of the
-      // App to enable the location services.
-      return Future.error('Location services are disabled.');
+      if(Store.snackbarKey.currentContext != null){
+        Navigator.of(Store.snackbarKey.currentContext!).push(
+          CupertinoPageRoute(
+            builder: (context) => LocationPermissionView(),
+          ),
+        );
+        return null;
+      }
+
     }
 
     permission = await Geolocator.checkPermission();
     if (permission == LocationPermission.denied) {
       permission = await Geolocator.requestPermission();
       if (permission == LocationPermission.denied) {
-        // Permissions are denied, next time you could try
-        // requesting permissions again (this is also where
-        // Android's shouldShowRequestPermissionRationale
-        // returned true. According to Android guidelines
-        // your App should show an explanatory UI now.
+
         return Future.error('Location permissions are denied');
       }
     }
@@ -43,13 +49,16 @@ class LocationServices{
     Store.position = await Geolocator.getCurrentPosition();
     // When we reach here, permissions are granted and we can
     // continue accessing the position of the device.
+    print("getting users location: ${Store.position?.latitude}, ${Store.position?.longitude}");
+
     return Store.position!;
   }
 
 
   static Future<List<Location>> getLocationsFromString(String str)async{
-    print("here22");
-    return await locationFromAddress(str).onError((error, stackTrace) => []);
+    List<Location> locs = await locationFromAddress(str).onError((error, stackTrace) => []);
+    print("location from adress string ${locs.length}");
+    return locs;
   }
 
   static String getDistance(Location location){
@@ -60,6 +69,16 @@ class LocationServices{
     }
     return "not found";
   }
+
+  static int getDistanceNum(Location location){
+    if(Store.position != null) {
+      return (Geolocator.distanceBetween(
+        location.latitude, location.longitude, Store.position!.latitude,
+        Store.position!.longitude,).toInt());
+    }
+    return 0;
+  }
+
   static String distanceToString(int dist){
     if(dist < 1000){
       return "${dist} m";
@@ -75,18 +94,35 @@ class LocationServices{
     double lat = -location.latitude+Store.position!.latitude;
     double long = location.longitude-Store.position!.longitude;
 
-    print("radians${atan2(lat, long)}");
     return atan2(lat, long);
   }
 
 
   static Future<Placemark?> getAdressOfCurrentLocation(Location loc)async{
-    Position position = await getUsersLocation();
+    Position? position = await getUsersLocation();
+    if(position == null){
+      return null;
+    }
     List<Placemark> placemarks = await placemarkFromCoordinates(position.latitude, position.longitude);
     Placemark? placemark = placemarks.first;
     loc = Location(longitude: position.longitude, latitude: position.latitude, timestamp: DateTime.now());
-    print(position.longitude.toString()+","+position.latitude.toString());
     return placemark;
   }
+
+
+  Future<Map<Placemark,Location>> getPlacemarkFromAdress(String str)async{
+
+    List<Location> locations = await LocationServices.getLocationsFromString(str);
+    Map<Placemark,Location> countriesMaps = {};
+    await Future.forEach(locations, (element) async {
+      Placemark? countryStr = (await placemarkFromCoordinates(element.latitude, element.longitude)).first;
+      if(countryStr!=null){
+        countriesMaps.addAll({countryStr:element});
+      }
+    });
+    return countriesMaps;
+  }
+
+
 
 }

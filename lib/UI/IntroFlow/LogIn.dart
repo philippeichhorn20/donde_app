@@ -1,5 +1,7 @@
 import 'package:donde/BackendFunctions/SignUpFunctions.dart';
-import 'package:donde/MainViews/HomePage.dart';
+import 'package:donde/UI/IntroFlow/LocationPermissionView.dart';
+import 'package:donde/UI/MainViews/HomePage.dart';
+import 'package:donde/UI/MainViews/Skeleton.dart';
 import 'package:donde/UITemplates.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
@@ -20,6 +22,7 @@ class _LogInState extends State<LogIn> {
   Widget build(BuildContext context) {
     return Container(
       child: Scaffold(
+        resizeToAvoidBottomInset: false,
         body: Stack(
           alignment: Alignment.center,
           children: [
@@ -81,16 +84,14 @@ class _LogInState extends State<LogIn> {
                     OneSignal.shared
                         .promptUserForPushNotificationPermission()
                         .then((accepted) {
-                      print("Accepted permission: $accepted");
                     });
 
-                    OneSignal.shared.setExternalUserId(numberControl.text);
 
                     String s = await logInCorrect();
                     if (s == "") {
-                      Navigator.of(context).push(
+                      Navigator.of(context).pushReplacement(
                         CupertinoPageRoute(
-                          builder: (context) => HomePage(),
+                          builder: (context) => LocationPermissionView(),
                         ),
                       );
                     } else {

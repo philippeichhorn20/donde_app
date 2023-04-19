@@ -1,4 +1,7 @@
+import 'package:donde/BackendFunctions/RelationshipFunctions.dart';
+import 'package:donde/Classes/MyUser.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_rating_bar/flutter_rating_bar.dart';
 
 
 class UITemplates{
@@ -13,8 +16,8 @@ class UITemplates{
 
   static TextStyle smallTitleStyle = TextStyle(
     color: Colors.white,
-    fontWeight: FontWeight.w700,
-    fontSize: 35,
+    fontWeight: FontWeight.w800,
+    fontSize: 45,
   );
 
   static InputBorder inputBorder = OutlineInputBorder(
@@ -30,7 +33,7 @@ class UITemplates{
           color: Colors.transparent,
           style: BorderStyle.solid
       ),
-      borderRadius: BorderRadius.all(Radius.circular(20))
+      borderRadius: BorderRadius.all(Radius.circular(15))
   );
 
   static ButtonStyle buttonStyle = ElevatedButton.styleFrom(
@@ -40,7 +43,9 @@ class UITemplates{
   ),);
 
   static ButtonStyle lightButtonStyle = ElevatedButton.styleFrom(
-    backgroundColor: Colors.white12,
+    backgroundColor: Colors.grey[800],
+elevation: 0,
+    shadowColor: Colors.transparent,
     shape: RoundedRectangleBorder(
       borderRadius: BorderRadius.circular(40),
     ),);
@@ -63,7 +68,6 @@ class UITemplates{
       title: Text(text),
       backgroundColor: Colors.transparent,
       shadowColor: Colors.transparent,
-      automaticallyImplyLeading: false,
     );
   }
 
@@ -75,8 +79,15 @@ class UITemplates{
 
   //Spot Viex Templates
 
-  static TextStyle nameStyle = TextStyle(color: Colors.white,fontWeight: FontWeight.w600, fontSize: 20);
-  static TextStyle descriptionStyle = TextStyle(color: Colors.white54,fontWeight: FontWeight.w500, fontSize: 16);
+  static TextStyle nameStyle = TextStyle(color: Colors.white,fontWeight: FontWeight.w600, fontSize: 24);
+  static TextStyle descriptionStyle = TextStyle(color: Colors.white54,fontWeight: FontWeight.w500, fontSize: 14);
+  static TextStyle clickableText = TextStyle(color: Colors.white70,fontWeight: FontWeight.w500, fontSize: 16);
+  static TextStyle clickableTextButBold = TextStyle(color: Colors.white70,fontWeight: FontWeight.w800, fontSize: 16);
+  static TextStyle reviewNoteStyle = TextStyle(color: Colors.white70,fontWeight: FontWeight.w600, fontSize: 14);
+  static TextStyle settingsTextStyle = TextStyle(color: Colors.white, fontWeight: FontWeight.w600, fontSize: 18,);
+  static TextStyle settingsTextdark = TextStyle(color: Colors.white54, fontWeight: FontWeight.w600, fontSize: 18,);
+  static TextStyle settingsTextred = TextStyle(color: Colors.red, fontWeight: FontWeight.w600, fontSize: 18,);
+  static TextStyle reviewExperienceStyle =  TextStyle(color: Colors.black, fontSize: 18, fontWeight: FontWeight.w600);
 
   //foregroudn on reviews
 
@@ -90,7 +101,6 @@ static showErrorMessage(BuildContext context, String str){
       margin: EdgeInsets.only(bottom: 100, left: 10,right: 10),
       padding: EdgeInsets.only(left:10,right: 10, bottom: 10),
       behavior: SnackBarBehavior.floating,
-
       backgroundColor: Colors.black,
       shape: RoundedRectangleBorder(
                borderRadius: BorderRadius.all(Radius.circular(20))
@@ -98,7 +108,7 @@ static showErrorMessage(BuildContext context, String str){
   ),
 
       content: Container(
-        height: 60,
+        padding: EdgeInsets.only(top: 30, bottom: 30),
         child: Center(
           child: Text(
             str,
@@ -122,7 +132,10 @@ static Widget goBackArrow(BuildContext context) {
           color: Colors.white12,
         ),
         child: TextButton(
-
+          style:  TextButton.styleFrom(
+            splashFactory: NoSplash.splashFactory,
+            foregroundColor: Colors.transparent,
+          ),
           child: Icon(Icons.close, color: Colors.white,),
           onPressed: () {
             Navigator.pop(context);
@@ -131,5 +144,52 @@ static Widget goBackArrow(BuildContext context) {
       ),
     ),
   );
+}
+
+static RatingWidget ratingBarItem = RatingWidget(
+    empty: Icon(
+      Icons.circle_outlined,
+      color: Colors.grey,
+    ),
+    full: Icon(Icons.circle_rounded),
+    half: SizedBox());
+
+
+
+static Widget relationShipIndicator(MyUser user){
+  String relTypeStr = MyUser.relTypeToButtonString(user.relationshipType);
+  Color friendshipColor = user.relationshipType == RelationshipTypes.REQUESTED_BY_OTHER ? Colors.green : Colors.grey;
+  return StatefulBuilder(builder: (context, setState) {
+    return ElevatedButton(
+      onPressed: () async{
+        await RelationshipFunctions.handleFriendshipActions(user);
+        setState((){
+          user.relationshipType = user.relationshipType;
+          friendshipColor = user.relationshipType == RelationshipTypes.REQUESTED_BY_OTHER ? Colors.green : Colors.grey;
+          relTypeStr = MyUser.relTypeToButtonString(user.relationshipType);
+        });
+      },
+      style: ElevatedButton.styleFrom(
+
+        tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+        padding: EdgeInsets.only(top:3, bottom: 3,left: 5, right: 5),
+        minimumSize: Size.zero,
+        backgroundColor: friendshipColor,
+        shadowColor: Colors.transparent,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(5),
+        ),),
+      //TODO
+      child: Text((relTypeStr),
+        style: TextStyle(
+            color: Colors.black,
+            fontWeight: FontWeight.bold,
+            fontSize: 14
+        ),
+
+      ),
+
+    );
+  },);
 }
 }

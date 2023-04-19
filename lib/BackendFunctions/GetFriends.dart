@@ -7,77 +7,51 @@ class GetFriends{
 
 
   static Future<List<MyUser>> getFriendsFromContact(String contact)async{
-    print("function called");
-    var res = await Store.supabase.rpc('getuserstest',).onError((error, stackTrace) => {
-      print(error)
+    var res = await Store.supabase.rpc('getuserstest',).onError((error, stackTrace)  {
+      print(error);
+      print(stackTrace.toString());
     });
-    print("function finished");
     List<MyUser> users = [];
 
-    print(Store.supabase.auth.currentUser!.id);
     res.forEach((element) {
-      print(element.toString());
       users.add(MyUser.fromMap(element));
     });
-    print(res.length);
-    FirebaseAnalytics.instance.logEvent(name: "uses proposals (in app name: getuserstest)", parameters: {
+    FirebaseAnalytics.instance.logEvent(name: "uses_proposals", parameters: {
       "result":users.length
     });
+    //users.removeWhere((element) => element.id == Store.me.id);
+    print("userstest: ${users.length}");
     return users;
 }
 
-  static Future<List<MyUser>> getPeopleIFollow()async{
-    print("function called I follo");
-    var res = await Store.supabase.rpc('getfollowing',).onError((error, stackTrace) => {
-      print(error)
-    });
-    print("function finished");
-    List<MyUser> users = [];
-    print(res.length);
 
-    res.forEach((element) {
-      print(element.toString());
-      users.add(MyUser.fromMap(element));
-      print("user added");
-    });
-    FirebaseAnalytics.instance.logEvent(name: "searches following", parameters: {
-      "result":users.length
-    });
-    return users;
-  }
+
 
   static Future<List<MyUser>> getPeopleThatFollowMe()async{
 
-    print("function called follow me");
     var res = await Store.supabase.rpc('getfollowed',).onError((error, stackTrace) => {
       print(error)
     });
-    print(Store.supabase.auth.currentUser!.id);
 
-    print("function finished");
     List<MyUser> users = [];
-    print(res.length);
 
     res.forEach((element) {
-      print(element.toString());
       users.add(MyUser.fromMap(element));
-      print("user added");
-
     });
-    FirebaseAnalytics.instance.logEvent(name: "searches followers", parameters: {
+    FirebaseAnalytics.instance.logEvent(name: "searches_followers", parameters: {
       "result":users.length
     });
+    users.removeWhere((element) => element.id == Store.me.id);
+    print("getfollowed: ${users.length}");
 
     return users;
   }
 
   static Future<List<MyUser>> getUserFromString(String str)async{
     if(str.isEmpty || str == ""){
-      print("function opting to props");
 
       return getFriendsFromContact("");
     }
-    print("function called getuserFromstring me");
     var res = await Store.supabase.rpc('getuserfromstring',params:
     {
       "str":str
@@ -85,23 +59,36 @@ class GetFriends{
       print(error)
     });
 
-    print("function finished");
     List<MyUser> users = [];
-    print(res.length);
 
     res.forEach((element) {
       print(element.toString());
       users.add(MyUser.fromMap(element));
-      print("user added");
-
     });
-
+    users.removeWhere((element) => element.id == Store.me.id);
+    print("getuserfromstring: ${users.length}");
     return users;
   }
 
 
 
+//deprecated
+  static Future<List<MyUser>> getPeopleIFollow()async{
+    var res = await Store.supabase.rpc('getfollowing',).onError((error, stackTrace) => {
+      print(error)
+    });
+    List<MyUser> users = [];
 
+    res.forEach((element) {
+      users.add(MyUser.fromMap(element));
+    });
+    FirebaseAnalytics.instance.logEvent(name: "searches_following", parameters: {
+      "result":users.length
+    });
+    users.removeWhere((element) => element.id == Store.me.id);
+    print("getfollowing: ${users.length}");
+    return users;
+  }
 
 
 

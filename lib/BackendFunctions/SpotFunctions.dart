@@ -7,31 +7,55 @@ class SpotFunctions{
 
 
   static Future<List<Spot>> getSpots(String long, String lat, double radius)async{
-    print("h45454545ere");
 
     var res = await Store.supabase.rpc('getspots',params: {
       "lat":double.tryParse(lat),
       "long":double.tryParse(long),
       "rad": radius
     });
-    print("here");
     List<Spot> spots = [];
     res.forEach((element) {
       spots.add(Spot.fromMap(element));
     });
-    print(spots.length);
+    spots.sort((a, b) {
+      return a.getDistanceNum().compareTo(b.getDistanceNum());
+    },);
+    print("getspot ${spots.length}");
     return spots;
   }
 
   static Future<List<Spot>> fulltextspotsearch(String str)async{
-    var res = await Store.supabase.rpc('fulltextspotsearch',params: {
-      "str":str
+    str = str.replaceAll(RegExp("[^A-Za-z0-9 ]"),"");
+    str = str.replaceAll(" ","|");
+    var res;
+    if(str != "") {
+      res = await Store.supabase.rpc('fulltextspotsearch', params: {
+        "str": str
+      });
+    }else{
+      return [];
+    }
+
+    List<Spot> spots = [];
+    res.forEach((element) {
+      spots.add(Spot.fromMap(element));
+    });
+    print("fulltextspotsearch ${spots.length}");
+
+    return spots;
+  }
+
+  static Future<List<Spot>> getallspotsnearyou(double lat,long)async{
+    var res = await Store.supabase.rpc('getallspotsnearyou',params: {
+      "lat":lat,
+      "long":long
     });
 
     List<Spot> spots = [];
     res.forEach((element) {
       spots.add(Spot.fromMap(element));
     });
+    print("getallspotsnearyou ${spots.length}");
     return spots;
   }
 
@@ -52,16 +76,19 @@ class SpotFunctions{
     return true;
   }
 
-  static Future<Spot> getspotfromid(String id)async{
+  static Future<Spot?> getspotfromid(String id)async{
     var res = await Store.supabase.rpc('getspotfromid',params: {
       "id":int.tryParse(id)
     });
 
+    if(res.length == 0){
+      return null;
+    }
     List<Spot> spots = [];
     res.forEach((element) {
       spots.add(Spot.fromMap(element));
     });
+    print("getspotfromid ${spots.length}");
     return spots.first;
   }
-
 }
