@@ -4,6 +4,8 @@ import 'package:donde/BackendFunctions/SpotFunctions.dart';
 import 'package:donde/UI/BasicUIElements/ListTiles.dart';
 import 'package:donde/Classes/Review.dart';
 import 'package:donde/Classes/Spot.dart';
+import 'package:donde/UI/BasicUIElements/PopUps.dart';
+import 'package:donde/UI/BasicUIElements/SharePicView.dart';
 import 'package:donde/UITemplates.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/gestures.dart';
@@ -50,7 +52,11 @@ class _SpotViewState extends State<SpotView> {
               child: Container(
                 child: GestureDetector(
                   onTap: () async{
-                    Share.share(await Linking.createLinkToSpot(widget.spot));
+                    String link = await Linking.createLinkToUser();
+                   Share.share(
+                     "Meet me there: "+ widget.spot.name+" at "+widget.spot.adress+
+                         "\nAdd me here: $link"
+                   );
                   },
                   child: RichText(
                     text: TextSpan(
@@ -79,7 +85,7 @@ class _SpotViewState extends State<SpotView> {
                       TextSpan(text: "\t\t•\t\t" + widget.spot.getDistance(),
                         style: UITemplates.clickableText,
                       ),
-                      TextSpan(text:  "\t\t•\t\t" + ratingAvg+"/5 rating",
+                      TextSpan(text:  "\t\t•\t\t ${ratingAvg} (${widget.spot.reviews.length})",
                         style: UITemplates.clickableText,
                       ),
                       TextSpan(text:  "\n" + widget.spot.adress,

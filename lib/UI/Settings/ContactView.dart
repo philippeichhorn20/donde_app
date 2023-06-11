@@ -16,8 +16,7 @@ class ContactView extends StatefulWidget {
 
 class _ContactViewState extends State<ContactView> {
   List<MyUser> users = [];
-
-
+  bool loading = false;
   @override
   void initState() {
     // TODO: implement initState
@@ -31,7 +30,7 @@ class _ContactViewState extends State<ContactView> {
 
           resizeToAvoidBottomInset: false,
 
-          appBar: UITemplates.appbar(widget.type.name),
+          appBar: UITemplates.appbar(contacttypesToName(widget.type)),
           body: Stack(
             alignment: Alignment.center,
             children: [
@@ -39,9 +38,30 @@ class _ContactViewState extends State<ContactView> {
                 onRefresh: ()async {
                   await getUsers(widget.type);
                 },
+                color: Colors.black,
                 child:  ListView.builder(
-                  itemCount: users.length,
+                  itemCount: users.length == 0 && !loading ? 1 : users.length,
                   itemBuilder: (context, index) {
+                    if(users.length == 0 && !loading){
+                      return Center(
+                        child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.center,
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              Padding(
+                                padding: const EdgeInsets.all(30.0),
+                                child: Icon(
+                                  Icons.group,
+                                  size: 50,
+                                ),
+                              ),
+                              Text(
+                                "No Results found",
+                                style: UITemplates.buttonTextStyle,
+                                textAlign: TextAlign.center,
+                              ),
+                            ]),);
+                    }
                     MyUser user = users[index];
                     return ListTiles.userListTile(user, context);
                   },
@@ -54,6 +74,9 @@ class _ContactViewState extends State<ContactView> {
   }
 
   Future<void> getUsers(ContactTypes type)async{
+    setState(() {
+      loading = true;
+    });
     switch (type){
       case ContactTypes.REQUESTS:
         users =  await FriendRelationshipGroups.getRequestingUsers();
@@ -70,7 +93,28 @@ class _ContactViewState extends State<ContactView> {
     }
     setState(() {
       users = users;
+      loading = false;
     });
+  }
+
+
+  static String contacttypesToName(ContactTypes type){
+
+    switch (type){
+
+      case ContactTypes.REQUESTS:
+        return "Open Requests";
+        break;
+      case ContactTypes.FRIENDS:
+        return "Friends";
+        break;
+      case ContactTypes.PROPOSALS:
+        return "Find Friends";
+        break;
+      case ContactTypes.MY_REQUESTS:
+        return "Sent Requests";
+        break;
+    }
   }
 }
 

@@ -40,6 +40,7 @@ class _MapViewState extends State<MapView> {
     return Container(
       child: Stack(
         children: [
+
           FlutterMap(
             mapController: _mapController,
 
@@ -48,7 +49,6 @@ class _MapViewState extends State<MapView> {
                 zoom: 7.0,
                 maxZoom: 19.0,
                 interactiveFlags: InteractiveFlag.pinchZoom | InteractiveFlag.drag,
-
                 maxBounds: LatLngBounds(
                   LatLng(-90, -180.0),
                   LatLng(90.0, 180.0),
@@ -62,6 +62,7 @@ additionalOptions: {
   "api_key": "1f0e23ae-654e-4e3a-a48f-ff510f9b0a00",
 }
 ),
+
               MarkerLayerOptions(
                 key: key,
                 markers: widget.spotList.map((e) => Marker(point: LatLng(e.lat??0,e.long??0),
@@ -106,11 +107,23 @@ additionalOptions: {
                   );
                 },)).toList()
               ),
-
+              MarkerLayerOptions(
+                markers: [
+                  Marker(
+                    point: LatLng(Store.getListViewLocation()!.latitude,Store.getListViewLocation()!.longitude),
+                    builder: (context) {
+                      return Icon(Icons.location_on, color: Colors.grey[700],size: 50,);
+                    },
+                    height: 45,
+                    width: 45,
+                    anchorPos: AnchorPos.align(AnchorAlign.top),
+                  )
+                ]
+              )
             ],
 
           ),
-        /*
+
           Positioned(
               bottom: 100,
               right: 40,
@@ -123,7 +136,7 @@ additionalOptions: {
             },
             child: Icon(Icons.refresh),
           ))
-         */
+
         ],
       ),
     );

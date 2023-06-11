@@ -16,42 +16,31 @@ class LocationServices{
   static Future<Position?> getUsersLocation()async{
     bool serviceEnabled;
     LocationPermission permission;
-
+    try{
     // Test if location services are enabled.
     serviceEnabled = await Geolocator.isLocationServiceEnabled();
-    if (!serviceEnabled) {
-      if(Store.snackbarKey.currentContext != null){
-        Navigator.of(Store.snackbarKey.currentContext!).push(
-          CupertinoPageRoute(
-            builder: (context) => LocationPermissionView(),
-          ),
-        );
-        return null;
-      }
 
-    }
 
     permission = await Geolocator.checkPermission();
     if (permission == LocationPermission.denied) {
       permission = await Geolocator.requestPermission();
       if (permission == LocationPermission.denied) {
-
-        return Future.error('Location permissions are denied');
       }
     }
 
-    if (permission == LocationPermission.deniedForever) {
-      // Permissions are denied forever, handle appropriately.
-      return Future.error(
-          'Location permissions are permanently denied, we cannot request permissions.');
+
+      Store.position = await Geolocator.getCurrentPosition();
+    }catch (e){
+
+      Store.position = Position(longitude: 0, latitude: 0, timestamp: DateTime.now(), accuracy: 0, altitude: 0, heading: 0, speed: 0, speedAccuracy: 0);
     }
 
-    Store.position = await Geolocator.getCurrentPosition();
+
     // When we reach here, permissions are granted and we can
     // continue accessing the position of the device.
     print("getting users location: ${Store.position?.latitude}, ${Store.position?.longitude}");
 
-    return Store.position!;
+    return Store.position;
   }
 
 

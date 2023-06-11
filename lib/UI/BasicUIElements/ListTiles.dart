@@ -5,6 +5,7 @@ import 'package:donde/BackendFunctions/LocationServices.dart';
 import 'package:donde/BackendFunctions/RelationshipFunctions.dart';
 import 'package:donde/BackendFunctions/ReviewFunctions.dart';
 import 'package:donde/Classes/MyUser.dart';
+import 'package:donde/Classes/RawSpot.dart';
 import 'package:donde/Classes/Review.dart';
 import 'package:donde/Classes/Spot.dart';
 import 'package:donde/UI/BasicUIElements/PopUps.dart';
@@ -26,25 +27,32 @@ class ListTiles{
   static Widget userListTile (MyUser user, BuildContext context,{Function? action} ){
     return StatefulBuilder(builder: (context, setState) {
       return SizedBox(
-
+        width: MediaQuery.of(context).size.width,
+       // height: 100,
         child: Padding(
           padding: const EdgeInsets.all(8.0),
-          child: ListTile(title: Text(user.username,
-          style: UITemplates.buttonTextStyle,
+          child: ListTile(title: Row(
+            children: [
+              Expanded(
+                child: Text(user.username,
+                style: UITemplates.buttonTextStyle,
+                ),
+              ),
+              UITemplates.relationShipIndicator(user, false)
+            ],
           ),
           tileColor: Colors.white12,
             shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(20),
+              borderRadius: BorderRadius.circular(10),
       ),
-
-          trailing: UITemplates.relationShipIndicator(user),),
+         ),
         ),
       );
     },
     );
   }
 
-  static Widget spotListTile (Spot spot, BuildContext context, Review review){
+  static Widget spotListTile (RawSpot spot, BuildContext context){
 
     return StatefulBuilder(builder: (context, setState) {
       return Padding(
@@ -53,22 +61,11 @@ class ListTiles{
           shape: RoundedRectangleBorder(
               borderRadius: BorderRadius.circular(10),
           ),
+          trailing: spot.runtimeType == Spot?Icon((spot as Spot).getIcon()): SizedBox(),
           tileColor: Colors.white12,
          // minVerticalPadding: 10,
-          title: Text(spot.name,),
-          subtitle: Text(spot.adress, ),
-          onTap: () async{
-            ReviewFunctions.saveReview((await Review.addReview(review.text, spot, review.rating??0, review.textColor??0, review.image))!);
-            Navigator.of(context).pushReplacement(
-              CupertinoPageRoute(
-                builder: (context) => AddReview(),
-              ),
-            );
-            setState((){
-              Store.pers_controller!.index = 0;
-            });
-
-          },
+          title: spot.name == ""? Text(spot.adress??" "):Text(spot.name??"...",),
+          subtitle: spot.name == ""? SizedBox():Text(spot.adress??" ", style: UITemplates.clickableText,),
          ),
       );
     },);
@@ -132,10 +129,11 @@ class ListTiles{
                 ),
                 Positioned(
                     bottom: 20,
-                left: 10,
+                left:10,
+                right: 10,
                     child: Container(
-                      width: MediaQuery.of(context).size.width*.8,
-                      padding: EdgeInsets.only(left:20,right:20,top:10,bottom: 10),
+                    //  width: MediaQuery.of(context).size.width*.8,
+                      padding: EdgeInsets.only(left:20,right:20,top:10,bottom: 20),
                       decoration: BoxDecoration(
                         color: Colors.grey[100],
                         borderRadius: BorderRadius.all(Radius.circular(10))
@@ -143,6 +141,19 @@ class ListTiles{
                       child: Text(review.text,
                       style: UITemplates.reviewExperienceStyle,),
                     ),
+                ),
+                Positioned(
+                  bottom: 22,
+                  right: 12,
+                  child: Padding(
+                  padding: const EdgeInsets.only(left:2.0),
+                  child: RatingBar(ratingWidget: UITemplates.ratingBarItem, onRatingUpdate: (double value) {},
+                    initialRating: (review.rating??0).toDouble(),
+                    ignoreGestures: true,
+                    itemCount: 5,
+                    itemSize: 16,
+                  ),
+                ),
                 ),
                 if(review.author.id == Store.me.id)
                 Positioned(
@@ -161,8 +172,12 @@ class ListTiles{
 
                         onPressed: ()async {
                         await ReviewFunctions.deleteReview(review);
+                        setState((){
+                          review.isDeleted = true;
+                        });
                         setGenState((){
-                          review.spot!.reviews!.remove(review);
+
+                          review.spot!.reviews.remove(review);
                         });
                       },
                         child: Icon(Icons.delete_forever, color: Colors.white,),
@@ -179,35 +194,28 @@ class ListTiles{
                   child: Row(
                     crossAxisAlignment: CrossAxisAlignment.center,
                     children: [
+                      ElevatedButton(
+                        style: ElevatedButton.styleFrom(
+                          padding: EdgeInsets.zero,
+                          tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                          minimumSize: Size.zero,
+                          backgroundColor: Colors.transparent,
+                          shadowColor: Colors.transparent,
+                        ),
+                        onPressed: (){
+                          //call the reportsnackbar from popups class
+                          ScaffoldMessenger.of(context).showSnackBar(PopUps.reportSnackbar(context, review));
+                        }, child: Icon(Icons.more_horiz),),
                       if(review.createdAt != null)
-                        Text("${review.createdAt!.day}.${review.createdAt!.month}.${review.createdAt!.year}", style: UITemplates.reviewNoteStyle,),
-                      Text("\t•\tby ${review.author.username}\t",
-                        style: UITemplates.reviewNoteStyle,
-                      ),
+                    Text("\t\t${review.createdAt!.day}.${review.createdAt!.month}.${review.createdAt!.year}\t•\t", style: UITemplates.reviewNoteStyle,),
                       if(review.author.relationshipType != RelationshipTypes.FRIEND && review.author.relationshipType != RelationshipTypes.ME)
-                      UITemplates.relationShipIndicator(review.author),
-                      Padding(
-                        padding: const EdgeInsets.only(left:8.0),
-                        child: RatingBar(ratingWidget: UITemplates.ratingBarItem, onRatingUpdate: (double value) {},
-                          initialRating: (review.rating??0).toDouble(),
-                          ignoreGestures: true,
-                          itemCount: 5,
-                          itemSize: 16,
+                        UITemplates.relationShipIndicator(review.author, true),
+                      Expanded(
+                        child: Text("\t\t${review.author.username}",
+                          style: UITemplates.reviewNoteStyle,
+                          overflow: TextOverflow.ellipsis,
                         ),
                       ),
-                      ElevatedButton(
-                          style: ElevatedButton.styleFrom(
-
-                            tapTargetSize: MaterialTapTargetSize.shrinkWrap,
-                            minimumSize: Size.zero,
-                            backgroundColor: Colors.transparent,
-                            shadowColor: Colors.transparent,
-                          ),
-                        onPressed: (){
-                        //call the reportsnackbar from popups class
-                        ScaffoldMessenger.of(context).showSnackBar(PopUps.reportSnackbar(context, review));
-
-                      }, child: Icon(Icons.more_horiz),)
                     ],
                   ),
                 ),
@@ -224,16 +232,15 @@ class ListTiles{
   static SnackBar showSnackbar(MyUser user){
 
         return SnackBar(
+          margin: EdgeInsets.only(left:5,right: 5, bottom:70),
           backgroundColor: Colors.grey[900],
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(20),
           ),
-duration: Duration(days: 300),
+duration: Duration(days: 1),
           behavior: SnackBarBehavior.floating,
           content: Container(
-            height: 100,
             alignment: Alignment.topCenter,
-
             child: StatefulBuilder(
               builder: (context, setState) {
                 return Row(
@@ -243,7 +250,7 @@ duration: Duration(days: 300),
                   ),
                   Expanded(child: SizedBox()),
                   if(user.relationshipType != RelationshipTypes.ME)
-                  UITemplates.relationShipIndicator(user),
+                  UITemplates.relationShipIndicator(user, true),
                 ],
         );
               }

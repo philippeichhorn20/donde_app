@@ -22,6 +22,7 @@ class Store{
   static MyUser me = MyUser("me", "", "", -1);
   static Location? listViewLocation;
   static List<MyUser> friendRequests = [];
+  static int openRequestsCount = 0;
 
   static Future<void> initUser()async{
     //call after login TODO add usernam
@@ -29,6 +30,7 @@ class Store{
       me = await RelationshipFunctions.getUserFromId(supabase.auth.currentUser!.id)??MyUser("me", "", "", -1);
       me.id = supabase.auth.currentUser!.id;
       friendRequests = await FriendRelationshipGroups.getRequestingUsers();
+      openRequestsCount = friendRequests.length;
     }
   }
 
@@ -45,7 +47,6 @@ static Location? getListViewLocation(){
     if(position != null){
       return Location(latitude: position!.latitude, longitude: position!.longitude, timestamp: DateTime.now());
     }
-
+    Location(latitude: 50, longitude: -10, timestamp: DateTime.now());
 }
-
 }

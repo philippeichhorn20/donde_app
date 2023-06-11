@@ -23,6 +23,7 @@ class Review{
   DateTime? createdAt;
   Uint8List? pic;
   int? rating;
+  bool isDeleted = false;
 
   Review(this.text, this.author, this.spot, this.rating);
 

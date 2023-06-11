@@ -55,7 +55,6 @@ class ReviewFunctions{
     List<Review> reviews = [];
 
     await Future.forEach(res,(element) async{
-
       Review review = Review.fromMap(element as Map<String, dynamic>, spot);
       review.author = await RelationshipFunctions.getAuthorOfReview(review);
       reviews.add(review);
@@ -67,22 +66,25 @@ class ReviewFunctions{
   }
 
   static Future<Uint8List?> getReviewPic(Review review)async{
+if(review.isDeleted){
+  return null;
+}
+  if(review.pic != null){
+    print("getting stored one");
+    return review.pic;
+  }
+  print("getting not stored one");
 
-    if(review.pic != null){
-      print("getting stored one");
-      return review.pic;
-    }
-    print("getting not stored one");
+  if(review.id !=null && review.id != 0){
+    Uint8List data = await Store.supabase.storage
+        .from("reviewpics")
+        .download("reviewpics/public/"+review.id.toString());
+    print("done");
+    review.pic = data;
+    print("loading review pic");
+    return data;
 
-    if(review.id !=null){
-      Uint8List data = await Store.supabase.storage
-            .from("reviewpics")
-            .download("reviewpics/public/"+review.id.toString());
-      print("done");
-      review.pic = data;
-      print("loading review pic");
-      return data;
-    }
+  }
   }
 
   static Future<List<Review>> getMyReviews()async{
@@ -107,8 +109,10 @@ class ReviewFunctions{
         params: {
           'reviewid': rev.id,
         }).onError((error, stackTrace) => false);
-    print("deleting review");
-
+    final storageResponse = await Store.supabase
+    .storage
+        .from("reviewpics")
+        .remove(["reviewpics/public/"+rev.id.toString()]);
     return true;
   }
 

@@ -9,6 +9,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:onesignal_flutter/onesignal_flutter.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
+import 'package:url_launcher/url_launcher.dart';
+
 
 class SignUp extends StatefulWidget {
   final String refferal;
@@ -24,7 +26,6 @@ class _SignUpState extends State<SignUp> {
   TextEditingController passwordControl = TextEditingController();
 
 
-
   @override
   Widget build(BuildContext context) {
     return Container(
@@ -35,7 +36,7 @@ class _SignUpState extends State<SignUp> {
           children: [
             Column(
               children: [
-                SizedBox(height: 200,),
+                SizedBox(height: 100,),
 
                 Padding(
                   padding: const EdgeInsets.all(8.0),
@@ -45,6 +46,8 @@ class _SignUpState extends State<SignUp> {
                     autofocus: true,
                     controller: usernameControl,
                     style: UITemplates.importantTextStyle,
+                    maxLength: 20,
+                    maxLengthEnforcement: MaxLengthEnforcement.enforced,
                     decoration: InputDecoration(
                         hintText: "Username",
                       hintStyle: UITemplates.importantTextStyleHint,
@@ -58,7 +61,6 @@ class _SignUpState extends State<SignUp> {
                   padding: const EdgeInsets.all(8.0),
                   child: TextField(
                     cursorColor: Colors.black,
-
                     controller: numberControl,
                     style: UITemplates.importantTextStyle,
                     keyboardType: TextInputType.phone,
@@ -111,7 +113,7 @@ class _SignUpState extends State<SignUp> {
 
                     Navigator.of(context).push(
                       CupertinoPageRoute(
-                        builder: (context) => ContactShareView(),
+                        builder: (context) => ContactShareView(isOutsideIntroFlow: false),
                       ),
                     );
                   }else{

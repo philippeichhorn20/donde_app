@@ -1,5 +1,6 @@
 import 'package:donde/BackendFunctions/LocationServices.dart';
 import 'package:donde/BackendFunctions/SpotFunctions.dart';
+import 'package:donde/BackendFunctions/TomTomSpotSearch.dart';
 import 'package:donde/Classes/Review.dart';
 import 'package:donde/Store.dart';
 import 'package:donde/UI/BasicUIElements/ListTiles.dart';
@@ -67,19 +68,28 @@ class _NewSpotLocationState extends State<NewSpotLocation> {
                         enabledBorder: UITemplates.appBarInputBorder,
                       ),
                       onSubmitted: (value) async{
+
+                        /*
                         countries= await getCountriesFromAdress(street.text);
                         setState(() {
                           countries = countries;
                         });
+
+                         */
                       },
                       onChanged: (value) async{
+                        TomTomSpotSearch.getSpots(true, value);
+                        /*
                         if(value.length%2 == 0){
                           countries= await getCountriesFromAdress(street.text);
                           setState(() {
                             countries = countries;
-                          });
-                        }
+                          }
+                      );
 
+
+                        }
+   */
                       },
                     ),
                   ),

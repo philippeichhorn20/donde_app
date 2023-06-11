@@ -105,7 +105,7 @@ class _LocationPermissionViewState extends State<LocationPermissionView> {
       serviceEnabled = false;
     }
     if(serviceEnabled){
-      Store.initLoc();
+      await Store.initLoc();
       Navigator.of(context).pushReplacement(
         CupertinoPageRoute(
           builder: (context) => Skeleton(),

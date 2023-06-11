@@ -93,18 +93,18 @@ autofocus: true,
             if(loading)
               UITemplates.loadingAnimation,
             if(!loading)
-            Container(
-              child: Flexible(child: ListView.builder(
-            scrollDirection: Axis.vertical,
-            shrinkWrap: true,
-            itemCount: spots.length,
-            itemBuilder: (context, index) {
-              Spot spot = spots[index];
-              return ListTiles.spotListTile(spot, context, widget.review);
-            },
-          ),
-        ),
-      ),
+              Container(
+                child: Flexible(child: ListView.builder(
+                  scrollDirection: Axis.vertical,
+                  shrinkWrap: true,
+                  itemCount: spots.length,
+                  itemBuilder: (context, index) {
+                    Spot spot = spots[index];
+              //      return ListTiles.spotListTile(spot, context, widget.review);
+                  },
+                ),
+                ),
+              ),
           ],
         ),
       ),
@@ -116,9 +116,9 @@ autofocus: true,
       loading = true;
     });
     if(str == ""){
-      spots = await SpotFunctions.getallspotsnearyou(Store.position!.latitude, Store.position!.longitude);
+   //   spots = await SpotFunctions.getallspotsnearyou(Store.position!.latitude, Store.position!.longitude);
     }else{
-      spots = await SpotFunctions.fulltextspotsearch(searchText.text);
+  //    spots = await SpotFunctions.fulltextspotsearch(searchText.text);
     }
     setState(() {
       loading = false;

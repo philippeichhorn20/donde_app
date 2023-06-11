@@ -21,7 +21,7 @@ class Skeleton extends StatefulWidget {
 class _SkeletonState extends State<Skeleton> {
   static List<Widget> pages = [
     HomePage(),
-    AddReview(),
+    const AddReview(),
     SearchUserView()
   ];
 
@@ -43,15 +43,29 @@ class _SkeletonState extends State<Skeleton> {
       controller: Store.pers_controller,
 
       items: [
-        PersistentBottomNavBarItem(icon: Icon(Icons.home),activeColorSecondary: Colors.white, activeColorPrimary: Colors.white,inactiveColorSecondary: Colors.transparent, inactiveColorPrimary: Colors.grey,  ),
-        PersistentBottomNavBarItem(icon: Icon(Icons.camera_alt, size: 35,),activeColorSecondary: Colors.white, activeColorPrimary: Colors.white,inactiveColorSecondary: Colors.transparent, inactiveColorPrimary: Colors.grey ,  ),
-        PersistentBottomNavBarItem(icon: Icon(Icons.group),activeColorSecondary: Colors.white, activeColorPrimary: Colors.white,inactiveColorSecondary: Colors.transparent, inactiveColorPrimary: Colors.grey, ),
+        PersistentBottomNavBarItem(icon: const Icon(Icons.home),activeColorSecondary: Colors.white, activeColorPrimary: Colors.white,inactiveColorSecondary: Colors.transparent, inactiveColorPrimary: Colors.grey,  ),
+        PersistentBottomNavBarItem(icon: const Icon(Icons.camera_alt, size: 35,),activeColorSecondary: Colors.white, activeColorPrimary: Colors.white,inactiveColorSecondary: Colors.transparent, inactiveColorPrimary: Colors.grey ,  ),
+        PersistentBottomNavBarItem(icon: Stack(
+          fit: StackFit.passthrough,
+          children: [
+            const Icon(Icons.group),
+            if(Store.openRequestsCount > 0)
+              Positioned(top: 3, right: 0,child: Icon(Icons.circle_sharp, size: 15, color: Colors.red,),)
+          ],
+        ),activeColorSecondary: Colors.white, activeColorPrimary: Colors.white,inactiveColorSecondary: Colors.transparent, inactiveColorPrimary: Colors.grey, ),
       ],
+
       navBarStyle: NavBarStyle.simple,
       backgroundColor: Colors.black,
+      onItemSelected: (value) {
+       if(value == 2){
+         setState(() {
+           Store.openRequestsCount = 0;
+         });
+       }
+      },
 
-
-      decoration: NavBarDecoration(
+      decoration: const NavBarDecoration(
         border: Border.fromBorderSide(BorderSide.none),
         colorBehindNavBar: Colors.transparent,
       ),

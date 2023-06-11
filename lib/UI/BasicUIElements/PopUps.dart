@@ -1,3 +1,4 @@
+import 'dart:typed_data';
 import 'dart:ui';
 
 import 'package:donde/BackendFunctions/ReviewFunctions.dart';
@@ -5,6 +6,7 @@ import 'package:donde/Classes/Review.dart';
 import 'package:donde/Classes/Spot.dart';
 import 'package:donde/UI/MainViews/SpotView.dart';
 import 'package:donde/UITemplates.dart';
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 
 class PopUps {
@@ -35,7 +37,7 @@ class PopUps {
     int isSuccess = 0; // O: wait, 1:loading,2:success
 
     return SnackBar(
-      margin: EdgeInsets.all(5),
+      margin: EdgeInsets.only(left:5,right: 5, bottom:70),
       showCloseIcon: true,
       behavior: SnackBarBehavior.floating,
       shape: ShapeBorder.lerp(
@@ -89,4 +91,9 @@ class PopUps {
       duration: Duration(days: 1),
     );
   }
+
+
+
+
+
 }

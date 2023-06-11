@@ -7,6 +7,7 @@ import 'package:donde/Store.dart';
 import 'package:donde/UITemplates.dart';
 import 'package:firebase_analytics/firebase_analytics.dart';
 import 'package:firebase_dynamic_links/firebase_dynamic_links.dart';
+import 'package:firebase_remote_config/firebase_remote_config.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/scheduler.dart';
@@ -102,7 +103,7 @@ class _WelcomeState extends State<Welcome> {
             checkInput(friendInput.text);
           }, child: Text("Test", style: TextStyle(color: Colors.transparent),)),
           Positioned(
-            top: MediaQuery.of(context).size.height*.8,
+            top: MediaQuery.of(context).size.height*.75,
             child: Column(
               children: [
                 Container(

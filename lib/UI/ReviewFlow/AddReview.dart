@@ -7,6 +7,7 @@ import 'package:donde/UI/ReviewFlow/DoesSpotExistView.dart';
 import 'package:donde/UI/MainViews/HomePage.dart';
 import 'package:donde/UI/MainViews/SpotView.dart';
 import 'package:donde/Store.dart';
+
 import 'package:donde/UI/ReviewFlow/ReviewDetailsView.dart';
 import 'package:donde/UITemplates.dart';
 import 'package:flutter/cupertino.dart';
@@ -62,9 +63,17 @@ class _AddReviewState extends State<AddReview> {
         //     backgroundColor: Colors.black,
         body: SingleChildScrollView(
           child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               SizedBox(
-                height: 100,
+                height: 70,
+              ),
+              Padding(
+                padding: const EdgeInsets.only(left:8.0),
+                child: Text("Make a picture of the spot you want to rate", style: UITemplates.descriptionStyle,),
+              ),
+              SizedBox(
+                height: 10,
               ),
               FutureBuilder<void>(
                 future: _future,
@@ -111,7 +120,7 @@ class _AddReviewState extends State<AddReview> {
                                 if(pic != null)
                                 Positioned(
                                   top: 10,
-                                  left: 10,
+                                  right: 10,
                                   child: TextButton(
                                     style:  TextButton.styleFrom(
                                       splashFactory: NoSplash.splashFactory,
@@ -124,7 +133,7 @@ class _AddReviewState extends State<AddReview> {
                                     },
                                     child: Icon(
                                       Icons.close,
-                                      color: Colors.black,
+                                      color: Colors.white,
                                       size: 35,
                                       grade: 100,
                                       semanticLabel: "Delete",
@@ -159,35 +168,39 @@ class _AddReviewState extends State<AddReview> {
                       }
                     });
                   },
-                  child: Text("Pick photo from library", style: UITemplates.descriptionStyle,textAlign: TextAlign.start),
+                  child: Text("Pick photo from library", style: UITemplates.reviewNoteStyle,textAlign: TextAlign.start),
                 ),
               ),
               if(pic==null)
-              Padding(
-                padding: const EdgeInsets.only(top: 12.0),
-                child: TextButton(
+              Container(
+                alignment: Alignment.center,
 
-                  onPressed: () async {
-                      await takePictureandResize();
-                      setState(() {
-                        pic = pic;
-                      });
-                  },
-                  style: TextButton.styleFrom(
-                    splashFactory: NoSplash.splashFactory,
-                    foregroundColor: Colors.transparent,
-                    backgroundColor: Colors.transparent,
-                  ),
-                  child: Container(
-                    width: 60,
-                    height: 60,
-                    decoration: new BoxDecoration(
-                      shape: BoxShape.circle,
+                child: Padding(
+                  padding: const EdgeInsets.only(top: 12.0),
+                  child: TextButton(
 
-                      border: Border.all(
-                        color: Colors.white,
-                        width: 6
-                      )
+                    onPressed: () async {
+                        await takePictureandResize();
+                        setState(() {
+                          pic = pic;
+                        });
+                    },
+                    style: TextButton.styleFrom(
+                      splashFactory: NoSplash.splashFactory,
+                      foregroundColor: Colors.transparent,
+                      backgroundColor: Colors.transparent,
+                    ),
+                    child: Container(
+                      width: 60,
+                      height: 60,
+                      decoration: new BoxDecoration(
+                        shape: BoxShape.circle,
+
+                        border: Border.all(
+                          color: Colors.white,
+                          width: 6
+                        )
+                      ),
                     ),
                   ),
                 ),
@@ -197,9 +210,8 @@ class _AddReviewState extends State<AddReview> {
               Container(
                 height: 50,
                 alignment: Alignment.centerRight,
-                width: MediaQuery.of(context).size.width*.8,
+                width: MediaQuery.of(context).size.width*.9,
                 child: TextButton.icon(
-
                   onPressed: () async{
                     if(pic == null){
                       UITemplates.showErrorMessage(context, "Add a picture");
@@ -216,6 +228,7 @@ class _AddReviewState extends State<AddReview> {
                   icon: Icon(Icons.arrow_forward_ios, color: Colors.white38,size: 30,),
                   label: Text("Use it", style: UITemplates.buttonTextStyle),),
               ),
+              SizedBox(height: 56,)
             ],
           ),
         ),
@@ -242,8 +255,9 @@ class _AddReviewState extends State<AddReview> {
       camera = cameras[0];
       camController = CameraController(
         camera!,
-        ResolutionPreset.ultraHigh,
-        imageFormatGroup: ImageFormatGroup.jpeg,
+        enableAudio: false,
+        ResolutionPreset.max,
+        imageFormatGroup: ImageFormatGroup.bgra8888,
 
       );
       await camController!.initialize();
@@ -261,8 +275,14 @@ class _AddReviewState extends State<AddReview> {
 
   Future<File?> picImageFromLibrary() async {
     final ImagePicker picker = ImagePicker();
-    XFile? temp =
-        await picker.pickImage(source: ImageSource.gallery, imageQuality: 1);
+    XFile? temp;
+    try {
+      temp =
+      await picker.pickImage(source: ImageSource.gallery, imageQuality: 1);
+    }catch(e){
+      UITemplates.showErrorMessage(context, "You disabled library access");
+      return null;
+    }
     if (temp == null) {
       return null;
     } else {

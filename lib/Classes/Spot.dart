@@ -1,12 +1,13 @@
 import 'dart:convert';
 
 import 'package:donde/BackendFunctions/LocationServices.dart';
+import 'package:donde/Classes/RawSpot.dart';
 import 'package:donde/Classes/Review.dart';
 import 'package:flutter/material.dart';
 import 'package:geocoding/geocoding.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
-class Spot {
+class Spot extends RawSpot{
   List<Review> reviews = [];
   String name;
   int likes;
@@ -22,6 +23,7 @@ class Spot {
       this.type);
 
   static Spot fromMap(Map<String, dynamic> spotMap) {
+    print(spotMap.toString());
     Spot spot = Spot(
         spotMap.remove("name"),
         0,
@@ -38,17 +40,16 @@ class Spot {
     try {
       String point = spotMap.remove("latlong") ?? "1 1";
       int length = point.length;
-
       List<String> points = point.substring(6, length - 1).split(" ");
-
       spot.lat = (double.tryParse(points[0])) ?? 0;
-
       spot.long = (double.tryParse(points[1])) ?? 0;
     } catch (e) {
       spot.lat = 0;
       spot.long = 0;
       print(e);
     }
+
+    spot.latlong = Location(latitude: spot.lat!, longitude: spot.long!, timestamp: DateTime.now());
 
     return spot;
   }
@@ -112,6 +113,9 @@ class Spot {
       case SpotTypes.Other:
         return Icons.interests;
         break;
+      case SpotTypes.Cafe:
+        return Icons.local_cafe;
+        break;
     }
   }
 }
@@ -125,4 +129,5 @@ enum SpotTypes {
   Culture,
   Nature,
   Other,
+  Cafe
 }

@@ -98,7 +98,7 @@ static reviewText(double dark){
 static showErrorMessage(BuildContext context, String str){
   ScaffoldMessenger.of(context).showSnackBar(
     SnackBar(
-      margin: EdgeInsets.only(bottom: 100, left: 10,right: 10),
+      margin: EdgeInsets.only(bottom: 80, left: 10,right: 10),
       padding: EdgeInsets.only(left:10,right: 10, bottom: 10),
       behavior: SnackBarBehavior.floating,
       backgroundColor: Colors.black,
@@ -151,44 +151,92 @@ static RatingWidget ratingBarItem = RatingWidget(
       Icons.circle_outlined,
       color: Colors.grey,
     ),
-    full: Icon(Icons.circle_rounded),
+    full: Icon(Icons.circle_rounded, color: Colors.black,),
     half: SizedBox());
 
 
 
-static Widget relationShipIndicator(MyUser user){
+static Widget relationShipIndicator(MyUser user, bool minimal){
   String relTypeStr = MyUser.relTypeToButtonString(user.relationshipType);
   Color friendshipColor = user.relationshipType == RelationshipTypes.REQUESTED_BY_OTHER ? Colors.green : Colors.grey;
   return StatefulBuilder(builder: (context, setState) {
-    return ElevatedButton(
-      onPressed: () async{
-        await RelationshipFunctions.handleFriendshipActions(user);
-        setState((){
-          user.relationshipType = user.relationshipType;
-          friendshipColor = user.relationshipType == RelationshipTypes.REQUESTED_BY_OTHER ? Colors.green : Colors.grey;
-          relTypeStr = MyUser.relTypeToButtonString(user.relationshipType);
-        });
-      },
-      style: ElevatedButton.styleFrom(
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.end,
+      children: [
+        if(user.relationshipType != RelationshipTypes.ME && user.relationshipType != RelationshipTypes.BLOCKED && !minimal)
+          TextButton.icon(
+              style: TextButton.styleFrom(
+                tapTargetSize: MaterialTapTargetSize.shrinkWrap
+              ),
+              onPressed: ()async {
+             await RelationshipFunctions.blockUser(user, true);
+            setState((){
+              user.relationshipType = user.relationshipType;
+              relTypeStr = MyUser.relTypeToButtonString(user.relationshipType);
+            });
+          }, icon: Icon(Icons.block, color: Colors.white24,), label: SizedBox()),
+        if(user.relationshipType == RelationshipTypes.REQUESTED_BY_OTHER)
+          TextButton(
+            onPressed: () async{
+              await RelationshipFunctions.declineFriendship(user, true);
+              setState((){
+                user.relationshipType = user.relationshipType;
+                friendshipColor = user.relationshipType == RelationshipTypes.REQUESTED_BY_OTHER ? Colors.green : Colors.grey;
+                relTypeStr = MyUser.relTypeToButtonString(user.relationshipType);
+              });
+            },
+            style: TextButton.styleFrom(
+              tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+              padding: EdgeInsets.only(top:3, bottom: 3,left: 5, right: 5),
+              minimumSize: Size.zero,
+                splashFactory: NoSplash.splashFactory,
+                foregroundColor: Colors.transparent,
+              backgroundColor: Colors.transparent,
+              shadowColor: Colors.transparent,
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(5),
+              ),),
+            //TODO
+            child: Text(("decline"),
+              style: TextStyle(
+                  color: Colors.white38,
+                  fontWeight: FontWeight.w500,
+                  fontSize: 15
+              ),),
+          ),
 
-        tapTargetSize: MaterialTapTargetSize.shrinkWrap,
-        padding: EdgeInsets.only(top:3, bottom: 3,left: 5, right: 5),
-        minimumSize: Size.zero,
-        backgroundColor: friendshipColor,
-        shadowColor: Colors.transparent,
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(5),
-        ),),
-      //TODO
-      child: Text((relTypeStr),
-        style: TextStyle(
-            color: Colors.black,
-            fontWeight: FontWeight.bold,
-            fontSize: 14
+        if(user.relationshipType != RelationshipTypes.BLOCKED)
+        ElevatedButton(
+          onPressed: () async{
+            await RelationshipFunctions.handleFriendshipActions(user);
+            setState((){
+              user.relationshipType = user.relationshipType;
+              friendshipColor = user.relationshipType == RelationshipTypes.REQUESTED_BY_OTHER ? Colors.green : Colors.grey;
+              relTypeStr = MyUser.relTypeToButtonString(user.relationshipType);
+            });
+          },
+          style: ElevatedButton.styleFrom(
+
+            tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+            padding: EdgeInsets.only(top:3, bottom: 3,left: 5, right: 5),
+            minimumSize: Size.zero,
+            backgroundColor: friendshipColor,
+            shadowColor: Colors.transparent,
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(5),
+            ),),
+          //TODO
+          child: Text((relTypeStr),
+            style: TextStyle(
+                color: Colors.black,
+                fontWeight: FontWeight.bold,
+                fontSize: 14
+            ),
+
+          ),
+
         ),
-
-      ),
-
+      ],
     );
   },);
 }

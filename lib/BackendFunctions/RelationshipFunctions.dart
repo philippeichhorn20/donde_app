@@ -4,6 +4,7 @@ import 'package:donde/Classes/MyUser.dart';
 import 'package:donde/Classes/Review.dart';
 import 'package:donde/Store.dart';
 import 'package:firebase_analytics/firebase_analytics.dart';
+import 'package:flutter/cupertino.dart';
 
 class RelationshipFunctions{
 
@@ -34,6 +35,44 @@ class RelationshipFunctions{
     FirebaseAnalytics.instance.logEvent(name: "acc_friend");
     //TODO check if res is accepted, also in backend
     followee.relationshipType = RelationshipTypes.NONE;
+  }
+
+  static Future<void> declineFriendship(MyUser followee, bool force)async{
+    print("declinign request");
+    final res = await Store.supabase.rpc('declinefriendship', params: {'requestee': followee.id});
+    FirebaseAnalytics.instance.logEvent(name: "acc_friend");
+    //TODO check if res is accepted, also in backend
+    followee.relationshipType = RelationshipTypes.NONE;
+  }
+
+
+  static Future<void> blockUser(MyUser followee, bool force)async{
+    return showCupertinoModalPopup(
+      context: Store.snackbarKey.currentContext!, builder: (context) {
+      return CupertinoActionSheet(
+        title: Text("Are you sure you want to block ${followee.username}?"),
+        actions: [
+          CupertinoActionSheetAction(
+             isDestructiveAction: true,
+            child: Text("Block"),
+            onPressed: () async {
+              Navigator.pop(context);
+              final res = await Store.supabase.rpc('blockuser', params: {'requestee': followee.id});
+              followee.relationshipType = RelationshipTypes.BLOCKED;
+            },
+          )
+        ],
+        cancelButton: CupertinoActionSheetAction(
+          child: Text("Cancel"),
+          onPressed: () {
+            Navigator.pop(context);
+          },
+        ),
+      );
+    },);
+
+
+
   }
 
 
@@ -83,7 +122,29 @@ class RelationshipFunctions{
   static Future<void> handleFriendshipActions(MyUser user)async{
     switch (user.relationshipType) {
       case RelationshipTypes.FRIEND:
-        // TODO: Drop as friend
+        if(Store.snackbarKey.currentContext!= null){
+          return showCupertinoModalPopup(context: Store.snackbarKey.currentContext!, builder: (context) {
+            return CupertinoActionSheet(
+              title: Text("Are you sure you want to unfriend ${user.username}?"),
+              actions: [
+                CupertinoActionSheetAction(
+                  child: Text("Unfriend"),
+                  onPressed: () async {
+                    Navigator.pop(context);
+                    await declineFriendship(user, true);
+                  },
+                )
+              ],
+              cancelButton: CupertinoActionSheetAction(
+                child: Text("Cancel"),
+                onPressed: () {
+                  Navigator.pop(context);
+                },
+              ),
+            );
+          },);
+        }
+      //  declineFriendship(user, true);
         break;
       case RelationshipTypes.NONE:
         return await requestFriendship(user, true);

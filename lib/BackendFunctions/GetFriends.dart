@@ -49,7 +49,6 @@ class GetFriends{
 
   static Future<List<MyUser>> getUserFromString(String str)async{
     if(str.isEmpty || str == ""){
-
       return getFriendsFromContact("");
     }
     var res = await Store.supabase.rpc('getuserfromstring',params:

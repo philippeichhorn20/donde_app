@@ -2,12 +2,14 @@ import 'dart:io';
 
 import 'package:donde/Classes/Review.dart';
 import 'package:donde/Store.dart';
+import 'package:donde/UI/CreateSpot/NewSpot.dart';
 import 'package:donde/UI/ReviewFlow/DoesSpotExistView.dart';
 import 'package:donde/UITemplates.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_rating_bar/flutter_rating_bar.dart';
+import 'package:profanity_filter/profanity_filter.dart';
 
 class ReviewDetailsView extends StatefulWidget {
   final File pic;
@@ -76,7 +78,7 @@ class _ReviewDetailsViewState extends State<ReviewDetailsView> {
                 ),
               ),
               SizedBox(
-                height: 50,
+                height: MediaQuery.of(context).size.height*.05,
               ),
               Container(
                   padding: EdgeInsets.only(left: 30, top: 20, bottom: 10),
@@ -102,18 +104,22 @@ class _ReviewDetailsViewState extends State<ReviewDetailsView> {
                   },
                 ),
               ),
-              SizedBox(height: MediaQuery.of(context).size.height*.3,),
+              SizedBox(height: MediaQuery.of(context).size.height*.25,),
               Container(
                 height: 50,
                 width: MediaQuery.of(context).size.width * .8,
                 child: TextButton(
                   style: UITemplates.buttonStyle,
                   onPressed: () async {
+                    var filter = ProfanityFilter();
                     if (textControl.text.isEmpty) {
                       UITemplates.showErrorMessage(context, "Add a note");
                     } else if (rating == null) {
                       UITemplates.showErrorMessage(
                           context, "Leave a rating between 0 and 5");
+                    }else if (filter.hasProfanity(textControl.text)) {
+                      UITemplates.showErrorMessage(
+                          context, "Do not use bad language");
                     } else {
                       moveOn();
                     }
@@ -121,6 +127,7 @@ class _ReviewDetailsViewState extends State<ReviewDetailsView> {
                   child: Text("next", style: UITemplates.buttonTextStyle),
                 ),
               ),
+              SizedBox(height: 56,)
             ],
           ),
         ),
@@ -139,7 +146,7 @@ class _ReviewDetailsViewState extends State<ReviewDetailsView> {
     }
     Navigator.of(context).push(
       CupertinoPageRoute(
-        builder: (context) => DoesSpotExist(review),
+        builder: (context) => NewSpot("", review),
       ),
     );
   }

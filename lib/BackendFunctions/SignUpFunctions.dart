@@ -55,27 +55,44 @@ try{
 }
   }
 
-  static Future<bool> logInFromStorage()async{
+  static Future<LogInState> logInFromStorage()async{
+try{
+  await Supabase.initialize(
+    url: "https://zgrgtiatjryryowqwhhi.supabase.co",
+    anonKey: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inpncmd0aWF0anJ5cnlvd3F3aGhpIiwicm9sZSI6ImFub24iLCJpYXQiOjE2NzkyMzgxNzAsImV4cCI6MTk5NDgxNDE3MH0.jZqek_ImEiQpkR8WJ-XD7yPoSxzC12aGIhH3NN46xh0",
+  );
+}catch(e){
+
+}
+
+
+
     print("remote login");
     SharedPreferences inst = await SharedPreferences.getInstance();
     String? password = inst.getString("password");
     String? phone = inst.getString("phone");
     if(phone == null || password == null){
-      return false;
+      return LogInState.LOGGED_OUT;
     }
 
-    final AuthResponse res = await Store.supabase.auth.signInWithPassword(
-      phone: phone,
-      password: password,
-    );
-    final Session? session = res.session;
-    final User? user = res.user;
-    Store.initUser();
-    if(user != null){
-      OneSignal.shared.setExternalUserId(user.id);
-    }
+try{
+  final AuthResponse res = await Store.supabase.auth.signInWithPassword(
+    phone: phone,
+    password: password,
+  );
+  final Session? session = res.session;
+  final User? user = res.user;
+  Store.initUser();
+  if(user != null){
+    OneSignal.shared.setExternalUserId(user.id);
+  }
+  return res.user == null? LogInState.LOGGED_OUT:LogInState.LOGGED_IN;
 
-    return res.user != null;
+}catch(e){
+     return LogInState.NO_COONECTION;
+}
+
+
   }
 
 
@@ -91,21 +108,14 @@ try{
     SharedPreferences inst = await SharedPreferences.getInstance();
     inst.clear();
     bool success = true;
-    if(Store.supabase.auth.currentUser!=null){
-      String id = Store.supabase.auth.currentUser!.id;
-      await Store.supabase.auth.admin.deleteUser(id).onError((error, stackTrace) {
-        success = false;
-      });
-
-    }else{
-      success = false;
-    }
-    if(success){
+    var res = await Store.supabase.rpc('deleteuser', params: {'user_id': Store.me.id});
       OneSignal.shared.setExternalUserId("");
-    }
-
     return success;
   }
 
 
+}
+
+enum LogInState{
+  LOGGED_IN,LOGGED_OUT,NO_COONECTION
 }

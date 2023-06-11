@@ -100,6 +100,7 @@ class _SearchUserViewState extends State<SearchUserView> {
               onRefresh: callFunction,
               color: Colors.black,
               child: ListView.builder(
+                padding: EdgeInsets.only(bottom: 60),
                 scrollDirection: Axis.vertical,
                 shrinkWrap: false,
                 itemCount: users.length,

@@ -13,7 +13,7 @@ class MyUser{
   
   
   static MyUser fromMap(Map<String, dynamic> userMap){
-    MyUser user =   MyUser(
+    MyUser user = MyUser(
         userMap.remove("username"),
         "",
         userMap.remove("user_id"),
@@ -51,6 +51,8 @@ class MyUser{
       return RelationshipTypes.REQUESTED_BY_OTHER;
     }else if(num == 3){
       return RelationshipTypes.FRIEND;
+    }else if(num == 5){
+      return RelationshipTypes.BLOCKED;
     }
      return RelationshipTypes.NONE;
    }
@@ -71,11 +73,13 @@ class MyUser{
          break;
        case RelationshipTypes.ME:
          return "";
+         case RelationshipTypes.BLOCKED:
+       return "";
      }
    }
   
 }
 
 enum RelationshipTypes{
-  FRIEND,NONE,REQUESTED_BY_ME,REQUESTED_BY_OTHER, ME
+  FRIEND,NONE,REQUESTED_BY_ME,REQUESTED_BY_OTHER, ME, BLOCKED
 }

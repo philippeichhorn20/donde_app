@@ -10,13 +10,13 @@ class ContactFunctions {
     List<Contact> contacts = (await FlutterContacts.getContacts(withProperties: true));
     int count = 0;
     contacts.forEach((element) {
-      if(element.phones.length>0 && count <5){
+      if(element.phones.length>0){
+        print(element.phones.first.number);
         count++;
-        s+= element.phones.first.number.replaceAll(" ", "");
+        s+= element.phones.first.number.replaceAll(" ", "").replaceAll("+", "");
         s+=",";
       }
     });
-
     return await getFriends(s);
   }
 
@@ -31,6 +31,7 @@ class ContactFunctions {
     res.forEach((element) {
       users.add(MyUser.fromMap(element));
     });
+    print(res);
    // users.removeWhere((element) => element.id == Store.me.id);
     print("get users from phone: ${users.length}");
     print(users.toString());

@@ -41,17 +41,21 @@
 		<key>LSRequiresIPhoneOS</key>
 		<true/>
 		<key>NSCameraUsageDescription</key>
-		<string>Enable access to share pictures.</string>
+		<string>Use the camera to add a picture to your review.</string>
+		<key>NSMicrophoneUsageDescription</key>
+		<string>We will not access your microphone</string>
 		<key>NSContactsUsageDescription</key>
 		<string>Check, which of your contacts are on the platform</string>
 		<key>NSLocationWhenInUseUsageDescription</key>
-		<string>Needed to find the best results near you.</string>
+		<string>Allow access to let us show you spots near you and propose addresses in your area to help you add new reviews and spots.</string>
+		<key>NSLocationAlwaysAndWhenInUseUsageDescription</key>
+		<string>Allow access to let us show you spots near you and propose addresses in your area to help you add new reviews and spots.</string>
 		<key>NSPhotoLibraryUsageDescription</key>
-		<string>This app needs access your Photo Library.</string>
+		<string>Pick photos from your library to add a picture to your review.</string>
 		<key>LSApplicationQueriesSchemes</key>
-        <array>
-          <string>sms</string>
-        </array>
+		<array>
+			<string>sms</string>
+		</array>
 		<key>UIApplicationSupportsIndirectInputEvents</key>
 		<true/>
 		<key>UIBackgroundModes</key>

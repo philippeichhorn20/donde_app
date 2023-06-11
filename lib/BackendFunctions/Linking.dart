@@ -22,7 +22,7 @@ class Linking{
 
   static Future<String> createLinkToUser()async{
     final dynamicLinkParams = DynamicLinkParameters(
-      link: Uri.parse("https://opendonde.page.link/?user=${Store.me.id}"),
+      link: Uri.parse("https://opendonde.page.link/hey?user=${Store.me.id}"),
       uriPrefix: "https://opendonde.page.link",
       androidParameters: const AndroidParameters(packageName: "com.example.app.android"),
       iosParameters: const IOSParameters(bundleId: "com.example.app.ios"),
@@ -37,7 +37,7 @@ class Linking{
 
   static Future<String> createLinkToSpot(Spot spot)async{
     final dynamicLinkParams = DynamicLinkParameters(
-      link: Uri.parse("https://opendonde.page.link/?user=${Store.me.id}&spot=${spot.id}"),
+      link: Uri.parse("https://opendonde.page.link/hey?user=${Store.me.id}&spot=${spot.id}"),
       uriPrefix: "https://opendonde.page.link",
       androidParameters: const AndroidParameters(packageName: "com.example.app.android"),
       iosParameters: const IOSParameters(bundleId: "com.example.app.ios"),
@@ -66,9 +66,10 @@ class Linking{
 
   static Future<void> handlePotentialLinks(GlobalKey snackbarKey)async{
     FirebaseDynamicLinks.instance.onLink.listen((PendingDynamicLinkData data) async{
-
-
       MyUser? user;
+
+
+
       if(data.link.queryParameters["user"] != null) {
          user = await RelationshipFunctions.getUserFromId(
             data.link.queryParameters["user"]!);
