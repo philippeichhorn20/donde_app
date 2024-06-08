@@ -27,6 +27,7 @@ class _SearchUserViewState extends State<SearchUserView> {
   @override
   Widget build(BuildContext context) {
     return Container(
+     // color: Colors.grey[850],
       child: Column(
         children: [
           SizedBox(height: 60,),
@@ -42,7 +43,7 @@ class _SearchUserViewState extends State<SearchUserView> {
                   autofocus: true,
                   decoration: InputDecoration(
 
-                    fillColor: Colors.white12,
+                    fillColor: Colors.grey[700],
                     hintText: "Find users",
                     hintStyle: UITemplates.settingsTextStyle,
                     focusedBorder: UITemplates.appBarInputBorder,
@@ -76,25 +77,36 @@ class _SearchUserViewState extends State<SearchUserView> {
                   child: Icon(Icons.settings, size: 28,))
             ],
           ),
+
           Container(
             margin: EdgeInsets.all(10),
             decoration: BoxDecoration(
-                color: Colors.black,
+                color: Colors.green[700],
+
                 borderRadius: BorderRadius.all(Radius.circular(10))
             ),
+
             width: MediaQuery.of(context).size.width,
             child: ListTile(
+
               onTap: ()async{
                 String link = await Linking.createLinkToUser();
                 await Share.share(link);
               },
+
               leading: Icon(Icons.ios_share, size: 30,),
               title: Text("Invite friends", style: UITemplates.settingsTextStyle,),
-              subtitle: Text(Store.me.username, style: UITemplates.reviewNoteStyle,),
+              subtitle: Text(Store.me.uniqueUsername??Store.me.username, style: UITemplates.reviewNoteStyle,),
             ),
 
           ),
-
+          Container(
+            alignment: Alignment.centerLeft,
+            child: Padding(
+              padding: const EdgeInsets.only(left:12.0, top: 5,bottom: 5) ,
+              child: Text(searchText.text.isEmpty?"Our recommendations":"Your search results", style: UITemplates.descriptionStyle,textAlign: TextAlign.start,),
+            ),
+          ),
           Flexible(
             child: RefreshIndicator(
               onRefresh: callFunction,

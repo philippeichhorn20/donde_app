@@ -1,4 +1,5 @@
 import 'package:donde/Classes/MyUser.dart';
+import 'package:donde/Classes/Review.dart';
 import 'package:donde/Store.dart';
 import 'package:firebase_analytics/firebase_analytics.dart';
 
@@ -43,6 +44,29 @@ class GetFriends{
     });
     users.removeWhere((element) => element.id == Store.me.id);
     print("getfollowed: ${users.length}");
+
+    return users;
+  }
+
+
+
+  static Future<List<MyUser>> getreactingusers(Review review,Reactions reaction )async{
+
+    var res = await Store.supabase.rpc('getreactingusers',
+    params: {
+      "review":review.id,
+      "reaction":reaction.name
+    }
+    );
+
+    print(res.toString());
+    List<MyUser> users = [];
+
+    res.forEach((element) {
+      users.add(MyUser.fromMap(element));
+    });
+
+    print("getreactingusers: ${users.length}");
 
     return users;
   }

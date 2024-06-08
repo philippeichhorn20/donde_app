@@ -2,6 +2,7 @@ import 'package:donde/BackendFunctions/Linking.dart';
 import 'package:donde/BackendFunctions/LocationServices.dart';
 import 'package:donde/BackendFunctions/SpotFunctions.dart';
 import 'package:donde/Classes/Spot.dart';
+import 'package:donde/UI/MainViews/FeedView.dart';
 import 'package:donde/UI/ReviewFlow/DoesSpotExistView.dart';
 import 'package:donde/UI/CreateSpot/NewSpot.dart';
 import 'package:donde/UI/MainViews/MapView.dart';
@@ -22,15 +23,19 @@ class HomePage extends StatefulWidget {
   _HomePageState createState() => _HomePageState();
 }
 
-class _HomePageState extends State<HomePage> {
+class _HomePageState extends State<HomePage> with SingleTickerProviderStateMixin{
   late Future spots;
   List<Spot> spotList = [];
   List<Spot> rawSpotList = [];
+
+  late TabController tabControl;
+
 
   GlobalKey builderKey = GlobalKey();
   int spotTypeIndex = -1;
   initState() {
     super.initState();
+    tabControl = TabController(length: 2, vsync: this);
     spots = getSpots(200, false);
   }
 
@@ -39,6 +44,7 @@ class _HomePageState extends State<HomePage> {
     return Container(
       child: DefaultTabController(
         length: 2,
+
         child: Scaffold(
           resizeToAvoidBottomInset: false,
           appBar: AppBar(
@@ -57,17 +63,20 @@ class _HomePageState extends State<HomePage> {
                 child:  TabBar(
                   padding: EdgeInsets.zero,
                   tabs: [
-                    Padding(
-                      padding: EdgeInsets.zero,
-                      child: Icon(Icons.map),
-                    ),
+
                     Padding(
                       padding: EdgeInsets.zero,
                       child: Icon(Icons.list),
                     ),
+                    Padding(
+                      padding: EdgeInsets.zero,
+                      child: Icon(Icons.map),
+                    ),
                   ],
                   onTap: (value) {
-                    HapticFeedback.heavyImpact();
+setState(() {
+  tabControl.index = value;
+});                    HapticFeedback.heavyImpact();
                   },
                   indicator: BoxDecoration(
                       borderRadius: BorderRadius.all(Radius.circular(10)),
@@ -124,59 +133,12 @@ class _HomePageState extends State<HomePage> {
               Stack(
                 alignment: Alignment.center,
                 children: [
-                  TabBarView(children: [
-                    MapView(spotList, getSpots, builderKey),
-                    RefreshIndicator(
-                      onRefresh: () async {
-                        await getSpots(50, true);
-                      },
-                      color: Colors.white,
-                      backgroundColor: Colors.black,
-                      child: ListView.builder(
-                        scrollDirection: Axis.vertical,
-                        itemCount: spotList.length + 1,
-                        key: builderKey,
-                        itemBuilder: (context, index) {
-                          if (index == spotList.length) {
-                            if(spotList.isEmpty){
-                              return Center(
-                                child: Column(
-                                  crossAxisAlignment: CrossAxisAlignment.center,
-                                  mainAxisAlignment: MainAxisAlignment.center,
-                                  children: [
-                                    Padding(
-                                      padding: const EdgeInsets.all(30.0),
-                                      child: Icon(
-                                        Icons.group,
-                                        size: 50,
-                                      ),
-                                    ),
-                                    Text(
-                                      "No Results found",
-                                      style: UITemplates.buttonTextStyle,
-                                      textAlign: TextAlign.center,
-                                    ),
-                                    Text(
-                                      "add friends or create reviews",
-                                      style: UITemplates.clickableText,
-                                      textAlign: TextAlign.center,
-                                    ),
-                                  ],
-                                ),
-                              );
-                            }
-                            return SizedBox(
-                              height: 200,
-                            );
-                          }
+                  TabBarView(
 
-                          Spot spot = spotList[index];
-                          return Container(
-                              width: MediaQuery.of(context).size.width,
-                              child: SpotView(spot));
-                        },
-                      ),
-                    ),
+                      controller: tabControl,
+                      children: [
+                        FeedView(forceNewSpots: getSpots, spotList: spotList, builderKey: builderKey),
+                        MapView(spotList, getSpots, builderKey),
                   ]),
                 ],
               ),
@@ -187,6 +149,15 @@ class _HomePageState extends State<HomePage> {
     );
   }
 
+  void moveToMap(Spot spot){
+    setState(() {
+      tabControl.index = 0;
+      tabControl.animateTo(0);
+    });
+    Store.moveToMap(spot);
+  }
+
+
   Future<List<Spot>> getSpots(double radius, bool refresh) async {
     if (spotList.isEmpty || refresh) {
       List<Spot> temp = await SpotFunctions.getSpots(
@@ -194,7 +165,6 @@ class _HomePageState extends State<HomePage> {
           Store.getListViewLocation()!.latitude.toString(),
           radius);
 
-        print("here");
         spotList = temp;
         rawSpotList = spotList;
         updateTypes(spotTypeIndex);
@@ -242,7 +212,7 @@ AppBar(
               child: TextButton.icon(
                   onPressed: () {
                     Navigator.of(context).push(
-                      CupertinoPageRoute(
+                      CupetinoPageRoute(
                         fullscreenDialog: true,
                         builder: (context) => SettingsMain(),
                       ),

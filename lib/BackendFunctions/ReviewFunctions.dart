@@ -48,8 +48,7 @@ class ReviewFunctions{
 
   static Future<List<Review>> getReviews(Spot spot)async{
 
-    print("really db reqwuest");
-    var res = await Store.supabase.rpc('getreviews',params: {
+    var res = await Store.supabase.rpc('getreviews2',params: {
       "spot": spot.id,
     });
     List<Review> reviews = [];
@@ -60,8 +59,6 @@ class ReviewFunctions{
       reviews.add(review);
     });
     spot.reviews = reviews;
-    print("getting reviews ${reviews.length}");
-
     return reviews;
   }
 
@@ -126,5 +123,30 @@ if(review.isDeleted){
         }).onError((error, stackTrace) => false);
     print("reporting review");
     return true;
+  }
+
+
+  static Future<void> incrementReaction(Reactions reaction, Review review)async{
+    print("incre");
+    var res = await Store.supabase.rpc('incrementreaction',
+        params: {
+          'review': review.id,
+          'type':reaction.name
+        }).onError((error, stackTrace) {
+      print(stackTrace);
+
+    });
+  }
+
+
+  static Future<void> decrementReaction(Reactions reaction, Review review)async{
+    print("decre");
+    var res = await Store.supabase.rpc('decrementreaction',
+        params: {
+          'review': review.id,
+          'type':reaction.name
+        }).onError((error, stackTrace) {
+          print(stackTrace);
+    });
   }
 }

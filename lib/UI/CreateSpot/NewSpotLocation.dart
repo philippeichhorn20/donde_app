@@ -68,14 +68,8 @@ class _NewSpotLocationState extends State<NewSpotLocation> {
                         enabledBorder: UITemplates.appBarInputBorder,
                       ),
                       onSubmitted: (value) async{
+                        TomTomSpotSearch.getSpots(true, value);
 
-                        /*
-                        countries= await getCountriesFromAdress(street.text);
-                        setState(() {
-                          countries = countries;
-                        });
-
-                         */
                       },
                       onChanged: (value) async{
                         TomTomSpotSearch.getSpots(true, value);
@@ -159,7 +153,7 @@ class _NewSpotLocationState extends State<NewSpotLocation> {
                           height: 50,
                           child: ElevatedButton(
                             onPressed: ()async{
-                              await fillWithCurrentLocation();
+                  //            await fillWithCurrentLocation();
                               Spot? spot = await saveSpot();
                               Review? review;
                               if(spot!= null){
@@ -201,19 +195,6 @@ class _NewSpotLocationState extends State<NewSpotLocation> {
     );
   }
 
-  Future<bool> fillWithCurrentLocation()async{
-    if(Store.position == null){
-      return false;
-    }
-    Location loc = Location(latitude: Store.position!.latitude, longitude: Store.position!.longitude, timestamp: DateTime.now());
-    Placemark? placemark = await LocationServices.getAdressOfCurrentLocation(loc);
-    if(placemark == null){
-      return false;
-    }
-    street.text = placemark.street??"";
-    location = loc;
-    return true;
-  }
 
   Future<Spot?> saveSpot()async{
     if(location== null) return null;

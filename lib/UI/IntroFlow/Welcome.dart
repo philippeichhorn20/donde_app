@@ -133,7 +133,7 @@ class _WelcomeState extends State<Welcome> {
                     ),
                     style: UITemplates.buttonStyle,
                     onPressed: () async {
-                      if (borderColor == Colors.green) {
+                      if (borderColor == Colors.green || true) {
                         Navigator.of(context).push(
                           CupertinoPageRoute(
                             builder: (context) => SignUp(friendInput.text),

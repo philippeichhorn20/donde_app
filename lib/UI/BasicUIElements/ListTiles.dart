@@ -9,6 +9,7 @@ import 'package:donde/Classes/RawSpot.dart';
 import 'package:donde/Classes/Review.dart';
 import 'package:donde/Classes/Spot.dart';
 import 'package:donde/UI/BasicUIElements/PopUps.dart';
+import 'package:donde/UI/BasicUIElements/SpecialUIElements.dart';
 import 'package:donde/UI/MainViews/HomePage.dart';
 import 'package:donde/UI/ReviewFlow/AddReview.dart';
 import 'package:donde/UI/MainViews/SpotView.dart';
@@ -30,22 +31,34 @@ class ListTiles{
         width: MediaQuery.of(context).size.width,
        // height: 100,
         child: Padding(
-          padding: const EdgeInsets.all(8.0),
-          child: ListTile(title: Row(
+          padding: const EdgeInsets.only(left:8.0, right: 8, bottom: 6,top: 6),
+          child: ListTile(
+            title: Row(
             children: [
               Expanded(
-                child: Text(user.username,
-                style: UITemplates.buttonTextStyle,
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(user.username,
+                    style: UITemplates.buttonTextStyle,
+                    ),
+                    SizedBox(height: 3,),
+                    if(user.uniqueUsername != null && user.uniqueUsername != "")Text(user.uniqueUsername??"",
+                    style: UITemplates.clickableText,
+                    )
+                  ],
                 ),
               ),
               UITemplates.relationShipIndicator(user, false)
             ],
           ),
-          tileColor: Colors.white12,
+          tileColor:  Colors.white12,
             shape: RoundedRectangleBorder(
               borderRadius: BorderRadius.circular(10),
       ),
-         ),
+
+          ),
         ),
       );
     },
@@ -64,8 +77,8 @@ class ListTiles{
           trailing: spot.runtimeType == Spot?Icon((spot as Spot).getIcon()): SizedBox(),
           tileColor: Colors.white12,
          // minVerticalPadding: 10,
-          title: spot.name == ""? Text(spot.adress??" "):Text(spot.name??"...",),
-          subtitle: spot.name == ""? SizedBox():Text(spot.adress??" ", style: UITemplates.clickableText,),
+          title: spot.name == ""? Text(spot.adress??" ", style: UITemplates.settingsTextStyle,):Text(spot.name??"...",style: UITemplates.settingsTextStyle,),
+          subtitle: spot.title!= null?Text(spot.title!):spot.name == ""? SizedBox():Text(spot.adress??" ", style: UITemplates.clickableText,),
          ),
       );
     },);
@@ -78,7 +91,7 @@ class ListTiles{
 
     return StatefulBuilder(builder: (context, setState) {
       return Container(
-        height: 570,
+        height: 600,
         child: Column(
           children: [
             Stack(
@@ -128,7 +141,7 @@ class ListTiles{
                   ),
                 ),
                 Positioned(
-                    bottom: 20,
+                    bottom: 40,
                 left:10,
                 right: 10,
                     child: Container(
@@ -143,7 +156,7 @@ class ListTiles{
                     ),
                 ),
                 Positioned(
-                  bottom: 22,
+                  bottom: 42,
                   right: 12,
                   child: Padding(
                   padding: const EdgeInsets.only(left:2.0),
@@ -155,6 +168,7 @@ class ListTiles{
                   ),
                 ),
                 ),
+
                 if(review.author.id == Store.me.id)
                 Positioned(
                     top: 10,
@@ -220,7 +234,8 @@ class ListTiles{
                   ),
                 ),
               ),
-            )
+            ),
+            SpecialUIElements.feedbackIndicator(review),
           ],
         ),
       );
@@ -247,6 +262,9 @@ duration: Duration(days: 1),
                 children: [
                   Text("${user.username}",
                     style: UITemplates.importantTextStyle,
+                  ),
+                  Text("${user.uniqueUsername}",
+                    style: UITemplates.settingsTextStyle,
                   ),
                   Expanded(child: SizedBox()),
                   if(user.relationshipType != RelationshipTypes.ME)
@@ -276,5 +294,36 @@ duration: Duration(days: 1),
       ),
     );
 
+  }
+
+
+
+  static Widget AdSpotWidget(Function moveToPicTaking, BuildContext context){
+    return Container(
+      width: MediaQuery.of(context).size.width*.4,
+      padding: EdgeInsets.only(left:50, right: 50, top: 0, bottom: 0),
+      height: 140,
+      child:ElevatedButton(
+        style: ElevatedButton.styleFrom(
+          backgroundColor: Colors.black54,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(40),
+      ),
+
+    ),
+        child:Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Icon(Icons.add_circle, size: 40,),
+          //  Text("🤓", style: TextStyle(fontSize: 50),),
+            SizedBox(height: 10,),
+            Text("Add your own review", style: UITemplates.clickableTextButBold, textAlign: TextAlign.center,)
+          ],
+        ),
+        onPressed: (){
+          moveToPicTaking();
+        },
+      ),
+    );
   }
 }

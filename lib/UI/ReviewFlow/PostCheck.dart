@@ -34,7 +34,7 @@ class _PostCheckState extends State<PostCheck> {
                 child: Container(
                     height: 700,
                     width: MediaQuery.of(context).size.width,
-                    child: SpotView(widget.spot))),
+                    child: SpotView(widget.spot, (){}))),
             Positioned(
               bottom: 80,
               child: Container(

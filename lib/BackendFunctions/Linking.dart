@@ -101,7 +101,7 @@ class Linking{
                         borderRadius: BorderRadius.all(Radius.circular(20))
 
                     ),
-                    child: SingleChildScrollView(child: SpotView(spot!))),
+                    child: SingleChildScrollView(child: SpotView(spot!, (){}))),
               ),
             );
           },);

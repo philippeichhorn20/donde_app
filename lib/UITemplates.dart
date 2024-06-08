@@ -42,6 +42,10 @@ class UITemplates{
       borderRadius: BorderRadius.circular(40),
   ),);
 
+  static TextStyle numberOnReactionStyle = TextStyle(
+      fontSize: 18, fontWeight: FontWeight.w700
+  );
+
   static ButtonStyle lightButtonStyle = ElevatedButton.styleFrom(
     backgroundColor: Colors.grey[800],
 elevation: 0,

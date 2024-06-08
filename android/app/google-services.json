@@ -1,0 +1,46 @@
+{
+  "project_info": {
+    "project_number": "1014389239818",
+    "project_id": "donde-919c8",
+    "storage_bucket": "donde-919c8.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:1014389239818:android:3c460c110f6d01d8b2aff3",
+        "android_client_info": {
+          "package_name": "com.eichhorn.donde"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "1014389239818-5ovqa8gm0fip2tctdt5rn4fjusmke9od.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCydC6HY0oI7h-mvNskZ5YrHgHZSKeKsKw"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "1014389239818-5ovqa8gm0fip2tctdt5rn4fjusmke9od.apps.googleusercontent.com",
+              "client_type": 3
+            },
+            {
+              "client_id": "1014389239818-1dl6071grlcarja2uge4sq9f9kv073mu.apps.googleusercontent.com",
+              "client_type": 2,
+              "ios_info": {
+                "bundle_id": "com.eichhorn.donde"
+              }
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

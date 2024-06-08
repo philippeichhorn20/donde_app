@@ -3,6 +3,7 @@ import 'package:donde/BackendFunctions/Linking.dart';
 import 'package:donde/BackendFunctions/SignUpFunctions.dart';
 import 'package:donde/UI/IntroFlow/ContactShareView.dart';
 import 'package:donde/UI/IntroFlow/Welcome.dart';
+import 'package:donde/UI/Settings/ChangeUsername.dart';
 import 'package:donde/UI/Settings/ContactView.dart';
 import 'package:donde/UI/Settings/DeletePage.dart';
 import 'package:donde/UI/Settings/ImprintPage.dart';
@@ -134,6 +135,25 @@ class _SettingsMainState extends State<SettingsMain> {
                       },
                     ),
 
+                    Divider(height: 1),
+
+                    TextButton(
+                      style:  TextButton.styleFrom(
+                        splashFactory: NoSplash.splashFactory,
+                        foregroundColor: Colors.transparent,
+                      ),
+                      child: Container(
+                          alignment: Alignment.centerLeft,
+                          width: MediaQuery.of(context).size.width,
+                          child: Text("Change username", style: UITemplates.settingsTextStyle,)),
+                      onPressed: () {
+                        Navigator.of(context).push(
+                          CupertinoPageRoute(
+                            builder: (context) => const ChangeUsername(),
+                          ),
+                        );
+                      },
+                    ),
 
                   ],
                 ),
@@ -229,8 +249,6 @@ class _SettingsMainState extends State<SettingsMain> {
                           width: MediaQuery.of(context).size.width,
                           child: Text("Delete Account", style: UITemplates.settingsTextred,)),
                       onPressed: () async{
-
-
                         Navigator.of(context, rootNavigator: true).push(
                           CupertinoPageRoute(
                             builder: (context) => DeletePage(),

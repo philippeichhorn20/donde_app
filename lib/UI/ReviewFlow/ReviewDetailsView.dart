@@ -1,10 +1,12 @@
 import 'dart:io';
 
 import 'package:donde/Classes/Review.dart';
+import 'package:donde/Classes/Spot.dart';
 import 'package:donde/Store.dart';
 import 'package:donde/UI/CreateSpot/NewSpot.dart';
 import 'package:donde/UI/ReviewFlow/DoesSpotExistView.dart';
 import 'package:donde/UITemplates.dart';
+import 'package:firebase_analytics/firebase_analytics.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -13,7 +15,6 @@ import 'package:profanity_filter/profanity_filter.dart';
 
 class ReviewDetailsView extends StatefulWidget {
   final File pic;
-
   const ReviewDetailsView({Key? key, required this.pic}) : super(key: key);
 
   @override
@@ -28,6 +29,7 @@ class _ReviewDetailsViewState extends State<ReviewDetailsView> {
   void initState() {
     // TODO: implement initState
     super.initState();
+    FirebaseAnalytics.instance.logEvent(name: "creates review step 1");
   }
 
   @override
@@ -90,13 +92,14 @@ class _ReviewDetailsViewState extends State<ReviewDetailsView> {
               Container(
                 padding: EdgeInsets.all(15),
                 decoration: BoxDecoration(
-                    color: Colors.black12,
+                    color: Colors.white12,
                     border: Border.all(
                       color: Colors.transparent,
                     ),
                     borderRadius: BorderRadius.all(Radius.circular(40))),
                 child: RatingBar(
                   ratingWidget: UITemplates.ratingBarItem,
+glow: false,
                   itemPadding: EdgeInsets.only(left: 10, right: 10),
                   allowHalfRating: false,
                   onRatingUpdate: (value) async {

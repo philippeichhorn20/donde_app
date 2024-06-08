@@ -1,5 +1,6 @@
 import 'dart:math';
 
+import 'package:donde/Classes/RawSpot.dart';
 import 'package:donde/Store.dart';
 import 'package:donde/UI/IntroFlow/LocationPermissionView.dart';
 import 'package:flutter/cupertino.dart';
@@ -87,15 +88,22 @@ class LocationServices{
   }
 
 
-  static Future<Placemark?> getAdressOfCurrentLocation(Location loc)async{
+  static Future<RawSpot?> getAdressOfCurrentLocation()async{
     Position? position = await getUsersLocation();
     if(position == null){
       return null;
     }
     List<Placemark> placemarks = await placemarkFromCoordinates(position.latitude, position.longitude);
     Placemark? placemark = placemarks.first;
-    loc = Location(longitude: position.longitude, latitude: position.latitude, timestamp: DateTime.now());
-    return placemark;
+    if(placemarks.isEmpty || placemark.country == null){
+      return null;
+    }else{
+      RawSpot rawSpot = RawSpot();
+      rawSpot.adress = "${placemark.street}, ${placemark.locality}";
+      rawSpot.latlong = Location(latitude: position.latitude, longitude: position.longitude, timestamp: DateTime.now());
+      rawSpot.title = "Your current location";
+      return rawSpot;
+    }
   }
 
 

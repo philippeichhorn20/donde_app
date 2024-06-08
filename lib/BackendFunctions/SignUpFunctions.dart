@@ -7,7 +7,7 @@ import 'package:supabase_flutter/supabase_flutter.dart';
 class SignUpFunctions{
 
 
-  static Future<User?> signUp(String phone, password, username)async{
+  static Future<User?> signUp(String phone, password, username, uusername)async{
     final AuthResponse res = await Store.supabase.auth.signUp(
       phone: phone.replaceAll(" ", ""),
       password: password,
@@ -17,10 +17,11 @@ class SignUpFunctions{
     final User? user = res.user;
     SharedPreferences inst = await SharedPreferences.getInstance();
     if(user != null){
-      await Store.supabase.rpc('newuser',
+      await Store.supabase.rpc('newuser2',
           params: {
             'userid': res.user!.id,
             'username': username,
+            "unique_username":uusername.toLowerCase()
           });
 
       inst.setString("phone",phone.replaceAll(" ", "") );
@@ -96,6 +97,16 @@ try{
   }
 
 
+
+  static Future<bool> checkUniqueness(String uusername ) async{
+    var res = await Store.supabase.rpc('checkuniqueness',
+        params: {
+          'unique_username': uusername.toLowerCase(),
+        }).onError((error, stackTrace) => false);
+    return res  == 0;
+  }
+
+
   static Future<void> signOut()async{
     SharedPreferences inst = await SharedPreferences.getInstance();
     inst.clear();
@@ -112,7 +123,16 @@ try{
       OneSignal.shared.setExternalUserId("");
     return success;
   }
+  static Future<bool> changeDetails(String uusername, name)async{
+    bool success = true;
+    print("changing");
+    var res = await Store.supabase.rpc('changedetails', params: {'user_id': "",'unique_username':uusername,'username': name, });
+    print("change success");
 
+
+    //make sure success
+    return res == false ? false:true;
+  }
 
 }
 

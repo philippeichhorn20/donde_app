@@ -9,6 +9,7 @@ import 'package:donde/UI/Settings/SearchUserView.dart';
 import 'package:donde/UI/Settings/SettingsMain.dart';
 import 'package:flutter/material.dart';
 import 'package:persistent_bottom_nav_bar/persistent_tab_view.dart';
+import 'package:volume_controller/volume_controller.dart';
 
 
 class Skeleton extends StatefulWidget {
@@ -41,20 +42,19 @@ class _SkeletonState extends State<Skeleton> {
     return PersistentTabView(context,
       screens: pages,
       controller: Store.pers_controller,
-
       items: [
-        PersistentBottomNavBarItem(icon: const Icon(Icons.home),activeColorSecondary: Colors.white, activeColorPrimary: Colors.white,inactiveColorSecondary: Colors.transparent, inactiveColorPrimary: Colors.grey,  ),
-        PersistentBottomNavBarItem(icon: const Icon(Icons.camera_alt, size: 35,),activeColorSecondary: Colors.white, activeColorPrimary: Colors.white,inactiveColorSecondary: Colors.transparent, inactiveColorPrimary: Colors.grey ,  ),
+        PersistentBottomNavBarItem(icon: const Icon(Icons.home, size: 30),activeColorSecondary: Colors.white, activeColorPrimary: Colors.white,inactiveColorSecondary: Colors.transparent, inactiveColorPrimary: Colors.grey),
+        PersistentBottomNavBarItem(icon: const Icon(Icons.add, size: 35,),activeColorSecondary: Colors.black, activeColorPrimary: Colors.white,inactiveColorSecondary: Colors.transparent, inactiveColorPrimary: Colors.grey ,  ),
         PersistentBottomNavBarItem(icon: Stack(
           fit: StackFit.passthrough,
           children: [
-            const Icon(Icons.group),
+            const Icon(Icons.group, size: 30,),
             if(Store.openRequestsCount > 0)
               Positioned(top: 3, right: 0,child: Icon(Icons.circle_sharp, size: 15, color: Colors.red,),)
           ],
         ),activeColorSecondary: Colors.white, activeColorPrimary: Colors.white,inactiveColorSecondary: Colors.transparent, inactiveColorPrimary: Colors.grey, ),
       ],
-
+resizeToAvoidBottomInset: false,
       navBarStyle: NavBarStyle.simple,
       backgroundColor: Colors.black,
       onItemSelected: (value) {
@@ -65,12 +65,9 @@ class _SkeletonState extends State<Skeleton> {
        }
       },
 
-      decoration: const NavBarDecoration(
-        border: Border.fromBorderSide(BorderSide.none),
-        colorBehindNavBar: Colors.transparent,
-      ),
       hideNavigationBarWhenKeyboardShows: true,
       bottomScreenMargin: 0,
+
     );
   }
 }

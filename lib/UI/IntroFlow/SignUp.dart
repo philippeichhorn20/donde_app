@@ -21,11 +21,11 @@ class SignUp extends StatefulWidget {
 }
 
 class _SignUpState extends State<SignUp> {
-  TextEditingController numberControl = TextEditingController();
+  TextEditingController numberControl = TextEditingController(text: "+49");
   TextEditingController usernameControl = TextEditingController();
+  TextEditingController uusernameControl = TextEditingController();
   TextEditingController passwordControl = TextEditingController();
-
-
+  WaitingStates uniqueness = WaitingStates.NOT_UNIQUE;
   @override
   Widget build(BuildContext context) {
     return Container(
@@ -49,9 +49,34 @@ class _SignUpState extends State<SignUp> {
                     maxLength: 20,
                     maxLengthEnforcement: MaxLengthEnforcement.enforced,
                     decoration: InputDecoration(
-                        hintText: "Username",
+                        hintText: "Name",
                       hintStyle: UITemplates.importantTextStyleHint,
+                      border: InputBorder.none,
+                      focusedBorder: InputBorder.none,
+                    ),
+                  ),
+                ),
+                Padding(
+                  //uniqueUsername
+                  padding: const EdgeInsets.all(8.0),
+                  child: TextField(
+                    cursorColor: Colors.black,
+                    autofocus: true,
+                    controller: uusernameControl,
+                    style: UITemplates.importantTextStyle,
+                    onChanged: (value) {
+                      checkUniqueness();
+                    },
+                    inputFormatters: [
+                      FilteringTextInputFormatter.deny(
+                      RegExp(r'\s')),
+                    ],
+                    decoration: InputDecoration(
 
+                      hintText: "Username",
+                      suffixIcon: uniqueness == WaitingStates.LOADING?Container(child: UITemplates.loadingAnimation, width: 30,):uniqueness==WaitingStates.UNIQUE?Icon(Icons.done):Icon(Icons.close),
+                      suffixIconColor:uniqueness==WaitingStates.UNIQUE?Colors.green:Colors.red,
+                      hintStyle: UITemplates.importantTextStyleHint,
                       border: InputBorder.none,
                       focusedBorder: InputBorder.none,
                     ),
@@ -130,21 +155,48 @@ class _SignUpState extends State<SignUp> {
     );
   }
 
+  Future<void> checkUniqueness()async{
+    setState(() {
+      uniqueness = WaitingStates.LOADING;
+    });
+    bool uniquenessBool;
+    if(uusernameControl.text.length > 0){
+       uniquenessBool = await SignUpFunctions.checkUniqueness(uusernameControl.text);
+    }else{
+      uniquenessBool = false;
+    }
+    setState(() {
+      if(uniquenessBool){
+        uniqueness = WaitingStates.UNIQUE;
+      }else{
+        uniqueness = WaitingStates.NOT_UNIQUE;
+
+      }
+    });
+  }
 
   Future<String> signUpCorrect()async {
-    if(usernameControl.text == "" || passwordControl.text == ""||numberControl.text == ""){
+    if(usernameControl.text == "" ||uusernameControl.text == "" || passwordControl.text == ""||numberControl.text == ""){
       return "Enter your credentials";
+    }
+    if(uniqueness != WaitingStates.UNIQUE){
+      return "Your username is not unique";
     }
     if(numberControl.text.characters.first != "+"){
       return "Add country code (+49 in Germany) to your phone number";
     }
     try {
       User? user = await SignUpFunctions.signUp(
-          numberControl.text, passwordControl.text, usernameControl.text, );
+          numberControl.text, passwordControl.text, usernameControl.text, uusernameControl.text);
       await RelationshipFunctions.incrementSocialGraph(widget.refferal);
       return "";
     } on AuthException catch (e) {
       return e.message;
     }
   }
+}
+
+
+enum WaitingStates{
+  UNIQUE,NOT_UNIQUE,LOADING
 }

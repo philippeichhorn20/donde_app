@@ -1,3 +1,4 @@
+import 'package:donde/BackendFunctions/LocationServices.dart';
 import 'package:donde/BackendFunctions/ReviewFunctions.dart';
 import 'package:donde/BackendFunctions/SpotFunctions.dart';
 import 'package:donde/BackendFunctions/TomTomSpotSearch.dart';
@@ -11,6 +12,7 @@ import 'package:donde/UI/MainViews/HomePage.dart';
 import 'package:donde/UI/MainViews/SpotView.dart';
 import 'package:donde/UI/ReviewFlow/AddReview.dart';
 import 'package:donde/UITemplates.dart';
+import 'package:firebase_analytics/firebase_analytics.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -46,6 +48,8 @@ class _NewSpotState extends State<NewSpot> {
     // TODO: implement initState
     super.initState();
     nameControl.text = widget.name;
+    FirebaseAnalytics.instance.logEvent(name: "creates review step 1");
+
   }
 
   @override
@@ -301,19 +305,21 @@ class _NewSpotState extends State<NewSpot> {
 
 List<RawSpot> spots = [];
   Future<List<RawSpot>> getsTheSpots(String str, bool isTypeahead)async{
+    print("here");
 
-    if(str.length %3 != 0){
-      print("not sending");
-      return spots;
-    }
 
     if(str == ""){
       spots = (await SpotFunctions.getallspotsnearyou(Store.position!.latitude, Store.position!.longitude)).reversed.toList();
     }else{
       spots = (await SpotFunctions.fulltextspotsearch(str)).reversed.toList();
     }
-    if(spots.length < 6){
-      spots.addAll((await TomTomSpotSearch.getSpots(isTypeahead, str)));
+    RawSpot? here = await LocationServices.getAdressOfCurrentLocation();
+    if(here != null){
+      spots.insert(0, here);
+    }
+    print("str: ${str}");
+    if(spots.length < 3){
+      spots.addAll((await TomTomSpotSearch.getSpots(isTypeahead, str.replaceAll(",", ""))));
     }
     setState(() {
       spots = spots;
@@ -323,18 +329,13 @@ List<RawSpot> spots = [];
 
 
   Future<bool> save()async{
-    print(location);
-    print(adress);
-    print(spotTypeIndex);
-    print(nameControl.text);
+
     if(adress == "" || spotTypeIndex == -1 ||nameControl.text.isEmpty ||location == null ){
-      print("here3");
       return false;
     }
 
     Spot spot = Spot(nameControl.text,0,0,adress,"",SpotTypes.values[spotTypeIndex]);
     spot.latlong = location;
-    print(location.toString());
     spot.lat = location!.latitude;
     spot.long = location!.longitude;
     if(id == null){

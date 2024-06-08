@@ -1,6 +1,7 @@
 import 'package:donde/BackendFunctions/ContactFunctions.dart';
 import 'package:donde/BackendFunctions/Linking.dart';
 import 'package:donde/Classes/MyUser.dart';
+import 'package:donde/Store.dart';
 import 'package:donde/UI/BasicUIElements/ListTiles.dart';
 import 'package:donde/UI/IntroFlow/UserMatch.dart';
 import 'package:donde/UI/MainViews/Skeleton.dart';
@@ -42,8 +43,10 @@ class _ContactShareViewState extends State<ContactShareView> {
             top: MediaQuery.of(context).size.height*.3,
             child: ElevatedButton(
               onPressed: () async {
-                String link = await Linking.createLinkToUser();
-                await Share.share(link);
+                if(Store.myInviteLink == null){
+                  Store.myInviteLink  = await Linking.createLinkToUser();
+                }
+                await Share.share(Store.myInviteLink!);
               },
               style: UITemplates.lightButtonStyle,
               child: Container(
@@ -134,6 +137,15 @@ class _ContactShareViewState extends State<ContactShareView> {
                 if (isLoading)
                   Center(
                     child: UITemplates.loadingAnimation,
+                  ),
+                if (users.isNotEmpty && isChecked)
+                  Container(
+                    width: MediaQuery.of(context).size.width,
+                    alignment: Alignment.centerLeft,
+                    child: Padding(
+                      padding: const EdgeInsets.only(left:12.0, top: 5,bottom: 5) ,
+                      child: Text("From your contacts", style: UITemplates.descriptionStyle,textAlign: TextAlign.start,),
+                    ),
                   ),
                 if (users.isNotEmpty && isChecked)
                   Container(

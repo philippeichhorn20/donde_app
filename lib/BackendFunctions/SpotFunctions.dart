@@ -24,8 +24,8 @@ class SpotFunctions{
   }
 
   static Future<List<RawSpot>> fulltextspotsearch(String str)async{
-    str = str.replaceAll(RegExp("[^A-Za-z0-9 ]"),"");
-    str = str.replaceAll(" ","|");
+    str = str.replaceAll(RegExp("[^A-Za-z0-9]"),"");
+    //str = str.replaceAll(" ","|");
     var res;
     if(str != "") {
       try{
@@ -33,9 +33,7 @@ class SpotFunctions{
           "str": str
         });
       }catch(e){
-
       }
-
     }else{
       return [];
     }

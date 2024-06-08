@@ -4,6 +4,7 @@ import 'package:donde/Store.dart';
 class MyUser{
   String username;
   String phoneNumber;
+  String? uniqueUsername;
 //  bool amFollowing;
   RelationshipTypes relationshipType = RelationshipTypes.NONE;
   String id;
@@ -17,8 +18,9 @@ class MyUser{
         userMap.remove("username"),
         "",
         userMap.remove("user_id"),
-        userMap.remove("relationshipcount"),
+      userMap.remove("relationshipcount"),
     );
+    user.uniqueUsername = userMap.remove("unique_username");
     return user;
   }
 

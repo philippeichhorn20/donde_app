@@ -26,6 +26,7 @@ void main() async{
 
   OneSignal.shared.setAppId("2ecfeae4-3aa7-4e3c-9bc2-ee22c018cd57");
 
+
   final SharedPreferences prefs = await SharedPreferences.getInstance();
   LogInState isLoggedIn = await SignUpFunctions.logInFromStorage().timeout(Duration(seconds: 5), onTimeout: () {
     print("timeout");

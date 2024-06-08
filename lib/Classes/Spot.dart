@@ -16,11 +16,19 @@ class Spot extends RawSpot{
   String description;
   double? long;
   double? lat;
+  bool isAd = false;
   SpotTypes type;
   int? id;
 
   Spot(this.name, this.likes, this.dislikes, this.adress, this.description,
       this.type);
+
+  static Spot adSpot(){
+    Spot spot =   Spot("", 0, 0, "", "",
+        SpotTypes.Spot);
+    spot.isAd = true;
+    return spot;
+  }
 
   static Spot fromMap(Map<String, dynamic> spotMap) {
     print(spotMap.toString());
@@ -76,8 +84,9 @@ class Spot extends RawSpot{
   }
 
   String getDistance() {
+    print(this.adress);
     Location loc =
-        Location(latitude: lat!, longitude: long!, timestamp: DateTime.now());
+        Location(latitude: lat??0, longitude: long??0, timestamp: DateTime.now());
     return LocationServices.getDistance(loc);
   }
 

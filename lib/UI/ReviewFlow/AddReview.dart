@@ -18,6 +18,7 @@ import 'package:flutter_rating_bar/flutter_rating_bar.dart';
 import 'dart:io' as Io;
 import 'package:image/image.dart' as img;
 import 'package:image_picker/image_picker.dart';
+import 'package:volume_controller/volume_controller.dart';
 
 import '../../Classes/Spot.dart';
 
@@ -36,6 +37,7 @@ class _AddReviewState extends State<AddReview> {
   File? pic;
   Future? _future;
   late FocusNode myFocusNode;
+  bool flashOff = true;
 
   @override
   void dispose() {
@@ -53,6 +55,18 @@ class _AddReviewState extends State<AddReview> {
     super.initState();
     _future = cameraSetUp();
     myFocusNode = FocusNode();
+
+
+    VolumeController().listener((p0) async{
+    if(Store.pers_controller!= null && Store.pers_controller!.index == 1){
+      if(pic == null){
+        await takePictureandResize();
+        setState(() {
+          pic = pic;
+        });
+      }
+    }
+    });
   }
 
   @override
@@ -141,6 +155,34 @@ class _AddReviewState extends State<AddReview> {
                                     ),
                                   ),
                                 ),
+                                if(pic == null)
+                                  Positioned(
+                                    top: 10,
+                                    left: 10,
+                                    child: TextButton(
+                                      style:  TextButton.styleFrom(
+                                        splashFactory: NoSplash.splashFactory,
+                                        foregroundColor: Colors.transparent,
+                                        backgroundColor: Colors.grey[700],
+                                        tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                                        padding: EdgeInsets.zero,
+                                      ),
+                                      onPressed: ()  {
+                                        setState(() {
+                                          camController!.setFlashMode(flashOff?FlashMode.always:FlashMode.off);
+                                          flashOff = !flashOff;
+                                        });
+                                      },
+                                      child: Icon(
+                                        flashOff?Icons.flash_off:Icons.flash_on,
+                                        color: Colors.white,
+                                        size: 25,
+                                        grade: 100,
+                                        semanticLabel: "flash",
+                                        weight: 100,
+                                      ),
+                                    ),
+                                  ),
                               ],
                             ),
                           ),
@@ -153,11 +195,14 @@ class _AddReviewState extends State<AddReview> {
               ),
               Container(
                 alignment: Alignment.centerLeft,
-                child: TextButton(
+                padding: EdgeInsets.only(left: 10),
+                child: ElevatedButton(
 
-                  style:  TextButton.styleFrom(
+                  style:  ElevatedButton.styleFrom(
                     splashFactory: NoSplash.splashFactory,
                     foregroundColor: Colors.transparent,
+                    backgroundColor: Colors.black,
+                    elevation: 5
                   ),
                   onPressed: () async {
                     File? xfile =
@@ -168,7 +213,7 @@ class _AddReviewState extends State<AddReview> {
                       }
                     });
                   },
-                  child: Text("Pick photo from library", style: UITemplates.reviewNoteStyle,textAlign: TextAlign.start),
+                  child: Text("Pick photo from library", style: UITemplates.settingsTextStyle,textAlign: TextAlign.start),
                 ),
               ),
               if(pic==null)
@@ -219,7 +264,7 @@ class _AddReviewState extends State<AddReview> {
 
                       Navigator.of(context).push(
                         CupertinoPageRoute(
-                          builder: (context) => ReviewDetailsView(pic: pic!),
+                          builder: (context) => ReviewDetailsView(pic: pic!,),
                         ),
                       );
                     }
@@ -237,6 +282,7 @@ class _AddReviewState extends State<AddReview> {
   }
 
   Future<void> takePictureandResize() async {
+
     XFile xTemp = await camController!.takePicture();
     File compressedFile = await FlutterNativeImage.compressImage(
       xTemp.path,
@@ -260,7 +306,9 @@ class _AddReviewState extends State<AddReview> {
         imageFormatGroup: ImageFormatGroup.bgra8888,
 
       );
+
       await camController!.initialize();
+      camController!.setFlashMode(FlashMode.off);
       size = MediaQuery.of(context).size;
       deviceRatio = size.width / size.height;
       setState(() {

@@ -11,12 +11,14 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:share_plus/share_plus.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 import '../ReviewFlow/AddReview.dart';
 
 class SpotView extends StatefulWidget {
   final Spot spot;
-  const SpotView(this.spot);
+  final Function moveToMap;
+  const SpotView(this.spot,this.moveToMap);
 
   @override
   _SpotViewState createState() => _SpotViewState();
@@ -48,33 +50,46 @@ class _SpotViewState extends State<SpotView> {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Padding(
-              padding: const EdgeInsets.only(left: 40, top: 15, bottom: 0, right: 40),
+              padding: const EdgeInsets.only(left: 20, top: 15, bottom: 0, right: 20),
               child: Container(
-                child: GestureDetector(
-                  onTap: () async{
-                    String link = await Linking.createLinkToUser();
-                   Share.share(
-                     "Meet me there: "+ widget.spot.name+" at "+widget.spot.adress+
-                         "\nAdd me here: $link"
-                   );
-                  },
-                  child: RichText(
-                    text: TextSpan(
-                      children:  <TextSpan>[
-                        TextSpan(text: widget.spot.name,
-                          style: UITemplates.nameStyle,),
-                        TextSpan(text:  "\t\t•\t\tshare" ,
-                          style: UITemplates.descriptionStyle,
-                        ),
+                child: RichText(
+                  text: TextSpan(
+                    children:  <TextSpan>[
+                      TextSpan(text: widget.spot.name,
+                        style: UITemplates.nameStyle,
 
-                      ],
-                    ),
+
+                      ),
+                      TextSpan(text:  "\t\t•\t\tshare" ,
+                        style: UITemplates.descriptionStyle,
+                          recognizer: TapGestureRecognizer()
+                            ..onTap = ()async{
+                              String link = await Linking.createLinkToUser();
+                              Share.share(
+                                  "Check out this spot: "+ widget.spot.name+" at "+widget.spot.adress+
+                                      "\nAdd me here: $link"
+                              );
+                            }
+                      ),
+                      TextSpan(text:  "\t\t•\t\tdirections" ,
+                          style: UITemplates.descriptionStyle,
+                          recognizer: TapGestureRecognizer()
+                            ..onTap = (){
+                        if(widget.spot.latlong != null){
+                          launchUrl(Uri.parse('https://www.google.com/maps/search/?api=1&query=${widget.spot.lat},${widget.spot.long}'));
+                        }else{
+                          launchUrl(Uri.parse('https://www.google.com/maps/search/?api=1&query=${widget.spot.adress}'));
+                        }
+                      }
+                      ),
+
+                    ],
                   ),
                 ),
               ),
             ),
             Padding(
-              padding: const EdgeInsets.only(left: 40, top: 0, bottom: 2, right: 40),
+              padding: const EdgeInsets.only(left: 20, top: 0, bottom: 2, right: 20),
               child: Container(
                 child: RichText(
                   text: TextSpan(
@@ -97,7 +112,7 @@ class _SpotViewState extends State<SpotView> {
               ),
             ),
             Container(
-              height: 500,
+              height: 550,
               child: (widget.spot.reviews.length > 0)?
               PageView.builder(
                 itemCount: widget.spot.reviews.length,
